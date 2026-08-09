@@ -13,9 +13,10 @@ between.
 
 |  |  |  |
 |---|---|---|
-| ![Remote](docs/screenshots/remote.png) | ![Apps](docs/screenshots/apps.png) | ![Devices](docs/screenshots/devices.png) |
+| ![Remote](docs/screenshots/remote.png) | ![Number pad](docs/screenshots/numbers.png) | ![Pointer](docs/screenshots/pointer.png) |
 
-*(Screenshots use example/pseudo data — no real device.)*
+*(The three carousel pages — remote, number pad, pointer. App-launch logos are
+shown as neutral placeholders.)*
 
 ## Features
 
