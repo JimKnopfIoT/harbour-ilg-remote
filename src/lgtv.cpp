@@ -1,5 +1,6 @@
 #include "lgtv.h"
 
+#include <QGuiApplication>
 #include <QJsonArray>
 #include <QSslConfiguration>
 #include <QStringList>
@@ -74,6 +75,37 @@ LgTv::LgTv(QObject *parent)
     connect(&m_pointer, &QWebSocket::connected, this, &LgTv::onPointerConnected);
     connect(&m_pointer, &QWebSocket::disconnected, this, &LgTv::onPointerDisconnected);
 
+    // Jede Antwort des Fernsehers zaehlt als Lebenszeichen, auch das Pong
+    connect(&m_main, &QWebSocket::pong, this, [this](quint64, const QByteArray &) {
+        m_alive = true;
+    });
+
+    m_beat = new QTimer(this);
+    m_beat->setInterval(20000);
+    connect(m_beat, &QTimer::timeout, this, &LgTv::probe);
+
+    m_watch = new QTimer(this);
+    m_watch->setSingleShot(true);
+    m_watch->setInterval(8000);
+    connect(m_watch, &QTimer::timeout, this, [this]() {
+        if (!m_alive)
+            handleDrop();
+    });
+
+    m_retry = new QTimer(this);
+    m_retry->setSingleShot(true);
+    connect(m_retry, &QTimer::timeout, this, [this]() {
+        // Abstand erst danach verdoppeln: der erste Versuch kommt schnell
+        m_retryDelay = qMin(m_retryDelay * 2, 30000);
+        openMain();
+    });
+
+    /* Der haeufigste Fall: das Telefon war weg, die Verbindung ist tot, und
+       niemand hat es bemerkt. Beim Zurueckholen der App also nachsehen -
+       und im Hintergrund nicht sinnlos weiterfunken. */
+    connect(qGuiApp, &QGuiApplication::applicationStateChanged,
+            this, &LgTv::onAppStateChanged);
+
     // Zwei Zugestaendnisse sind noetig, damit ueberhaupt eine Verbindung
     // zustande kommt:
     //
@@ -102,6 +134,10 @@ LgTv::LgTv(QObject *parent)
                 qWarning() << "LgTv: Socketfehler:" << m_main.errorString();
                 setStatus(QStringLiteral("Fehler: ") + m_main.errorString());
                 emit failed(m_main.errorString());
+                /* Scheitert schon der Verbindungsaufbau - Fernseher aus,
+                   Netz noch nicht da -, kommt nur dieses Signal und kein
+                   disconnected. Ohne den Anstoss hier bliebe es dabei. */
+                scheduleRetry();
             });
 
     // Zertifikatsfehler zusaetzlich sichtbar machen. Ohne das sieht man nur
@@ -161,7 +197,19 @@ void LgTv::setStatus(const QString &s)
 void LgTv::connectTv()
 {
     disconnectTv();
+    // ... dieser Versuch ist gewollt, disconnectTv hat das Gegenteil vermerkt
+    m_userClosed = false;
+    m_retryDelay = 2000;
     setStatus(QStringLiteral("verbinde ..."));
+    openMain();
+}
+
+/* Einziger Weg, den Hauptsocket zu oeffnen. Der Zustandstest verhindert, dass
+   ein Wiederholungsversuch eine bereits laufende Verbindung zerschiesst. */
+void LgTv::openMain()
+{
+    if (m_main.state() != QAbstractSocket::UnconnectedState)
+        return;
     qWarning() << "LgTv: verbinde mit wss://" << m_host << ":3001";
     // Feste Wahl: wss auf 3001. Aktuelle Firmware bedient das offene
     // Port 3000 nicht mehr.
@@ -170,6 +218,9 @@ void LgTv::connectTv()
 
 void LgTv::disconnectTv()
 {
+    m_userClosed = true;
+    m_retry->stop();
+    stopBeat();
     m_pointer.close();
     m_main.close();
     m_linkUp = m_registered = m_pointerReady = false;
@@ -185,6 +236,8 @@ void LgTv::onMainConnected()
 {
     qWarning() << "LgTv: Verbindung offen, melde an";
     m_linkUp = true;
+    m_alive = true;
+    m_retryDelay = 2000;
     emit stateChanged();
     sendRegister();
 }
@@ -193,7 +246,98 @@ void LgTv::onMainDisconnected()
 {
     m_linkUp = m_registered = m_pointerReady = false;
     m_pending.clear();
+    /* Die Abos galten fuer die alte Verbindung; nach der Neuanmeldung
+       vergibt der Fernseher neue Kennungen. */
+    m_subs.clear();
+    stopBeat();
     emit stateChanged();
+
+    if (m_userClosed)
+        return;
+    qWarning() << "LgTv: Verbindung weg";
+    setStatus(QStringLiteral("Verbindung verloren"));
+    scheduleRetry();
+}
+
+// ---------- Lebenszeichen und Wiederverbinden ----------
+
+void LgTv::startBeat()
+{
+    if (m_registered && qGuiApp->applicationState() == Qt::ApplicationActive)
+        m_beat->start();
+}
+
+void LgTv::stopBeat()
+{
+    m_beat->stop();
+    m_watch->stop();
+}
+
+/* Fragt etwas Harmloses ab, dessen Antwort niemand auswertet. Das Ping-Rahmen
+   allein waere sparsamer, aber nicht jede Firmware antwortet darauf - die
+   SSAP-Anfrage tut es nachweislich. */
+void LgTv::probe()
+{
+    if (!m_registered)
+        return;
+    m_alive = false;
+    m_main.ping();
+    request(QStringLiteral("ssap://audio/getStatus"), QJsonObject(), WantHeartbeat);
+    m_watch->start();
+}
+
+/* Verbindung gilt als tot, obwohl der Socket noch offen aussieht. abort()
+   statt close(): auf einen Abschiedsgruss von der Gegenseite zu warten hat
+   hier keinen Zweck mehr. */
+void LgTv::handleDrop()
+{
+    qWarning() << "LgTv: kein Lebenszeichen - Verbindung gilt als tot";
+    setStatus(QStringLiteral("keine Antwort vom Fernseher"));
+    m_pointer.abort();
+    m_main.abort();
+    // Falls abort() kein disconnected ausgeloest hat, den Weg selbst gehen
+    if (m_linkUp || m_registered)
+        onMainDisconnected();
+}
+
+void LgTv::scheduleRetry()
+{
+    if (m_userClosed || m_retry->isActive())
+        return;
+    // Ein neuer Versuch laeuft bereits - etwa der aus connectTv()
+    if (m_main.state() != QAbstractSocket::UnconnectedState)
+        return;
+    /* Im Hintergrund nicht weiterfunken: das kostet Strom, und sobald die App
+       wieder da ist, klopft onAppStateChanged sofort an. */
+    if (qGuiApp->applicationState() != Qt::ApplicationActive)
+        return;
+    m_retry->start(m_retryDelay);
+}
+
+void LgTv::ensureConnected()
+{
+    if (m_userClosed)
+        return;
+    if (m_main.state() == QAbstractSocket::UnconnectedState) {
+        m_retryDelay = 2000;
+        setStatus(QStringLiteral("verbinde ..."));
+        openMain();
+        return;
+    }
+    // Sieht offen aus - nach dem Aufwachen ist das kein Beweis
+    if (m_registered)
+        probe();
+}
+
+void LgTv::onAppStateChanged(Qt::ApplicationState state)
+{
+    if (state == Qt::ApplicationActive) {
+        ensureConnected();
+        startBeat();
+    } else {
+        stopBeat();
+        m_retry->stop();
+    }
 }
 
 void LgTv::onPointerConnected()
@@ -236,6 +380,9 @@ void LgTv::sendRegister()
 
 void LgTv::onMainMessage(const QString &text)
 {
+    // Jede Antwort beweist, dass die Verbindung noch traegt
+    m_alive = true;
+
     const QJsonObject msg = QJsonDocument::fromJson(text.toUtf8()).object();
     const QString type = msg.value(QStringLiteral("type")).toString();
     const QJsonObject payload = msg.value(QStringLiteral("payload")).toObject();
@@ -271,6 +418,7 @@ void LgTv::onMainMessage(const QString &text)
                   ytPayload());
         refreshVolume();
         refreshChannel();
+        startBeat();
         return;
     }
 
@@ -338,6 +486,9 @@ QString LgTv::request(const QString &uri, const QJsonObject &payload, Want want)
 void LgTv::handlePayload(Want want, const QJsonObject &payload)
 {
     switch (want) {
+    case WantHeartbeat:
+        // Angekommen ist genug - der Inhalt interessiert nicht
+        break;
     case WantPointer: {
         const QString path = payload.value(QStringLiteral("socketPath")).toString();
         if (!path.isEmpty())

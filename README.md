@@ -25,6 +25,9 @@ shown as neutral placeholders.)*
 * A pointer / touchpad panel (magic-remote style) and an on-screen keyboard bridge.
 * Number pad and quick app-launch buttons (edit the app ids to match your TV).
 * **Wake-on-LAN** power-on via a magic packet.
+* A **self-healing connection**: a heartbeat spots a link that died silently
+  (phone asleep, TV switched off), and the app reconnects on its own with a
+  growing delay. Deliberate disconnects stay disconnected.
 * **Discovery** by SSDP, plus an optional port scan of the local subnet.
 * Multiple devices — add, edit and switch between TVs.
 * A cover with play/pause and connection state.
