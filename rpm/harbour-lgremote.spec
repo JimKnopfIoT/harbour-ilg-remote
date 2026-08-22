@@ -2,7 +2,7 @@ Name:       harbour-lgremote
 # Keep the build machine's name out of the RPM header.
 %define _buildhost reproducible-builder
 Summary:    Fernbedienung für LG webOS-Fernseher
-Version:    1.1.0
+Version:    1.1.1
 Release:    1
 License:    MIT
 URL:        https://github.com/JimKnopfIoT/harbour-ilg-remote
@@ -46,6 +46,16 @@ desktop-file-install --delete-original \
 %{_datadir}/icons/hicolor/*/apps/%{name}.png
 
 %changelog
+* Sat Aug 22 2026 harbour-lgremote contributors 1.1.1-1
+- Wake-on-LAN works for devices added by network discovery: the search can
+  only report an IP address, so the MAC field stayed empty and the power
+  button did nothing. The app now asks the connected TV for the MAC of the
+  interface it is reachable on and fills the field in. An address entered by
+  hand is left alone.
+- Text is no longer preceded by a blind ENTER. When the TV reports no text
+  field at all, that key press just hit whatever was highlighted - a key of
+  the on-screen keyboard, for instance. The app now says so instead.
+
 * Sat Aug 22 2026 harbour-lgremote contributors 1.1.0-1
 - User interface in English, with a German translation.
 - Quick launch on the number pad is now a 2x3 block: five freely assignable

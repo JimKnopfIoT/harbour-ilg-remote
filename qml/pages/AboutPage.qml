@@ -34,7 +34,7 @@ Page {
 
             Label {
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: qsTr("Version %1").arg("1.1.0")
+                text: qsTr("Version %1").arg("1.1.1")
                 font.pixelSize: Theme.fontSizeSmall
                 color: Theme.secondaryColor
             }
