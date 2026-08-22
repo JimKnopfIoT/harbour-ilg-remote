@@ -4,7 +4,7 @@ import Sailfish.Silica 1.0
 Page {
     id: page
 
-    allowedOrientations: Orientation.All
+    allowedOrientations: Orientation.Portrait
 
     SilicaFlickable {
         anchors.fill: parent
@@ -34,7 +34,7 @@ Page {
 
             Label {
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: qsTr("Version %1").arg("1.1.1")
+                text: qsTr("Version %1").arg("1.1.2")
                 font.pixelSize: Theme.fontSizeSmall
                 color: Theme.secondaryColor
             }

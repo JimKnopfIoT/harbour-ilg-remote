@@ -12,7 +12,7 @@ Page {
 
     readonly property bool picking: pickIndex >= 0
 
-    allowedOrientations: Orientation.All
+    allowedOrientations: Orientation.Portrait
 
     ListModel { id: entries }
 

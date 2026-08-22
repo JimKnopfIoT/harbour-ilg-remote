@@ -9,7 +9,7 @@ Page {
     property var tv
     property var window
 
-    allowedOrientations: Orientation.All
+    allowedOrientations: Orientation.Portrait
 
     PathView {
         id: carousel
@@ -50,7 +50,8 @@ Page {
 
         Component { id: mainPanel;   PanelMain    { tv: page.tv; window: page.window } }
         Component { id: numberPanel; PanelNumbers { tv: page.tv; window: page.window } }
-        Component { id: padPanel;    PanelPad     { tv: page.tv; window: page.window } }
+        Component { id: padPanel;    PanelPad     { tv: page.tv; window: page.window
+                                                  current: carousel.currentIndex === 2 } }
     }
 
     // Seitenanzeige, damit erkennbar ist, wo man sich befindet

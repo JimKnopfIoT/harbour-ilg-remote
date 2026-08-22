@@ -9,30 +9,62 @@ Page {
     property var tv
     property var window
 
-    allowedOrientations: Orientation.All
+    allowedOrientations: Orientation.Portrait
 
     ListModel { id: rows }
 
-    function addSection(title) { rows.append({ "kind": "section", "k": title, "v": "" }) }
-    function addRow(k, v)      { rows.append({ "kind": "row", "k": k, "v": String(v) }) }
-    function addMap(map) {
-        for (var key in map) addRow(key, map[key])
+    // Die Antworten treffen in beliebiger Reihenfolge ein, die Gliederung
+    // steht fest - jede Zeile wird in ihren Abschnitt einsortiert
+    readonly property var sections: [qsTr("Device"), qsTr("Network"),
+                                     qsTr("Open ports"), qsTr("Sound and ARC"),
+                                     qsTr("Inputs")]
+
+    function sectionAt(title) {
+        for (var i = 0; i < rows.count; i++)
+            if (rows.get(i).kind === "section" && rows.get(i).k === title)
+                return i
+        var rang = sections.indexOf(title)
+        for (var j = 0; j < rows.count; j++) {
+            var r = rows.get(j)
+            if (r.kind === "section" && sections.indexOf(r.k) > rang) {
+                rows.insert(j, { "kind": "section", "k": title, "v": "" })
+                return j
+            }
+        }
+        rows.append({ "kind": "section", "k": title, "v": "" })
+        return rows.count - 1
+    }
+
+    // Zeile an den Anfang ihres Abschnitts, egal wann sie eintrifft
+    function addRowTop(section, k, v) {
+        rows.insert(sectionAt(section) + 1, { "kind": "row", "k": k, "v": String(v) })
+    }
+
+    function addRow(section, k, v) {
+        var ende = sectionAt(section) + 1
+        while (ende < rows.count && rows.get(ende).kind !== "section")
+            ende++
+        rows.insert(ende, { "kind": "row", "k": k, "v": String(v) })
+    }
+
+    function addMap(section, map) {
+        for (var key in map) addRow(section, key, map[key])
     }
 
     function reload() {
         rows.clear()
-        portsHeaderDone = false
         busy.running = true
 
-        addSection(qsTr("Device"))
-        addRow(qsTr("Address"), panel.tv.host)
+        // Die Adresse gehoert zum Netz, nicht zum Geraet
+        addRow(qsTr("Network"), qsTr("Address"), panel.tv.host)
 
         if (!panel.tv.registered) {
-            addRow(qsTr("State"), qsTr("not connected"))
+            addRow(qsTr("Device"), qsTr("State"), qsTr("not connected"))
             busy.running = false
             return
         }
 
+        panel.tv.requestTlsInfo()
         panel.tv.requestSystemInfo()
         panel.tv.requestSoftwareInfo()
         panel.tv.requestNetworkInfo()
@@ -43,33 +75,27 @@ Page {
 
     Connections {
         target: tv
-        onSystemInfoReceived: panel.addMap(info)
-        onSoftwareInfoReceived: panel.addMap(info)
-        onNetworkInfoReceived: {
-            panel.addSection(qsTr("Network"))
-            panel.addMap(info)
-        }
-        onAudioStatusReceived: {
-            panel.addSection(qsTr("Sound and ARC"))
-            panel.addMap(info)
-        }
+        // Modell, Seriennummer, Tuner und die Firmware beschreiben das Geraet
+        onSystemInfoReceived: panel.addMap(qsTr("Device"), info)
+        onTunerReceived: panel.addRowTop(qsTr("Inputs"), qsTr("Tuner"), type)
+        onSoftwareInfoReceived: panel.addMap(qsTr("Device"), info)
+        onNetworkInfoReceived: panel.addMap(qsTr("Network"), info)
+        onAudioStatusReceived: panel.addMap(qsTr("Sound and ARC"), info)
+        // Kommt zuletzt und steht damit unten im Abschnitt Netzwerk
+        onTlsInfoChanged: panel.addRow(qsTr("Network"), qsTr("Encryption"),
+                                       panel.tv.tlsVersion)
         onInputsReceived: {
-            panel.addSection(qsTr("Inputs"))
             for (var i = 0; i < inputs.length; i++)
-                panel.addRow(inputs[i].label, inputs[i].ident)
+                panel.addRow(qsTr("Inputs"), inputs[i].label, inputs[i].ident)
         }
     }
 
     Connections {
         target: scanner
-        onResult: {
-            if (!portsHeaderDone) { panel.addSection(qsTr("Open ports")); portsHeaderDone = true }
-            if (open) panel.addRow(port + "  " + service, qsTr("open"))
-        }
+        onResult: if (open) panel.addRow(qsTr("Open ports"), port + "  " + service,
+                                         qsTr("open"))
         onFinished: busy.running = false
     }
-
-    property bool portsHeaderDone: false
     Component.onCompleted: reload()
 
     SilicaListView {

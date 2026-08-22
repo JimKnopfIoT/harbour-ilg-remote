@@ -2,7 +2,7 @@ Name:       harbour-lgremote
 # Keep the build machine's name out of the RPM header.
 %define _buildhost reproducible-builder
 Summary:    Fernbedienung für LG webOS-Fernseher
-Version:    1.1.1
+Version:    1.1.2
 Release:    1
 License:    MIT
 URL:        https://github.com/JimKnopfIoT/harbour-ilg-remote
@@ -46,6 +46,32 @@ desktop-file-install --delete-original \
 %{_datadir}/icons/hicolor/*/apps/%{name}.png
 
 %changelog
+* Sat Aug 22 2026 harbour-lgremote contributors 1.1.2-1
+- The TV certificate is picked out of the chain properly. The TV sends its own
+  certificate together with the intermediate that issued it, and the order of
+  the errors is not ours to choose - taking the first one compared the
+  intermediate against the pinned fingerprint and locked the app out entirely.
+- Reconnect timing matched to the TV: it accepts at most six connections at a
+  time and reclaims abandoned attempts only slowly, so retrying quickly locked
+  the app out of its own TV. Attempts are now spaced further apart.
+- The key channel is requested again when it drops. Until now a single drop
+  left the D-pad, the arrow keys and the number pad greyed out until a restart.
+- The YouTube tile works again. Recent firmware answers system.launcher/
+  getAppState with "403 access denied" for every app, and the failed query left
+  the pending launch waiting forever, so nothing happened at all.
+- Text field: separate buttons for text and for search. Without a text field
+  reported by the TV, no ENTER is sent any more - in apps that draw their own
+  keyboard, YouTube among them, it only pressed the highlighted key.
+- The keyboard stays open on the pointer page and the pointer area keeps its
+  size instead of growing and shrinking.
+- System data is grouped in fixed sections regardless of the order the TV
+  answers in: device, network, ports, sound, inputs. New: the negotiated
+  encryption. The tuner sits with the inputs, and mute reads on/off since it
+  is a state, not a capability.
+- Pull-down menu reordered; connect and disconnect moved to the device list,
+  which now also shows model, serial number and MAC address.
+- Portrait only - no page rotates any more.
+
 * Sat Aug 22 2026 harbour-lgremote contributors 1.1.1-1
 - Wake-on-LAN works for devices added by network discovery: the search can
   only report an IP address, so the MAC field stayed empty and the power

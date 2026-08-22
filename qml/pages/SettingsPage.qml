@@ -6,7 +6,7 @@ Page {
     property var tv
     property var window
 
-    allowedOrientations: Orientation.All
+    allowedOrientations: Orientation.Portrait
 
     RemorsePopup { id: remorse }
 
@@ -83,13 +83,6 @@ Page {
             DetailItem { label: qsTr("Address"); value: page.window.host }
             DetailItem { label: qsTr("MAC");     value: page.window.mac.length > 0
                                                         ? page.window.mac : qsTr("not stored") }
-
-            Button {
-                anchors.horizontalCenter: parent.horizontalCenter
-                text: qsTr("Manage devices")
-                onClicked: pageStack.push(Qt.resolvedUrl("DevicesPage.qml"),
-                                          { tv: page.tv, window: page.window })
-            }
 
             Label {
                 x: Theme.horizontalPageMargin
