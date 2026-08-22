@@ -9,9 +9,12 @@ Page {
     property var tv
     property var window
 
-    allowedOrientations: Orientation.All
+    allowedOrientations: Orientation.Portrait
 
     ListModel { id: foundModel }
+
+    // Modell und Seriennummer nachfragen, sonst bleiben sie leer
+    Component.onCompleted: if (tv.registered) tv.requestSystemInfo()
 
     property bool searched: false
 
@@ -50,6 +53,11 @@ Page {
         }
 
         PullDownMenu {
+            // Von Hand trennen und verbinden braucht man selten
+            MenuItem {
+                text: page.tv.linkUp ? qsTr("Disconnect") : qsTr("Connect")
+                onClicked: page.tv.linkUp ? page.tv.disconnectTv() : page.tv.connectTv()
+            }
             MenuItem {
                 text: discovery.running ? qsTr("Searching ...") : qsTr("Search the network")
                 enabled: !discovery.running
@@ -65,9 +73,12 @@ Page {
         delegate: ListItem {
             id: item
             width: list.width
-            contentHeight: Theme.itemSizeMedium
+            contentHeight: Math.max(Theme.itemSizeMedium,
+                                    zeilen.height + 2 * Theme.paddingMedium)
 
             property var dev: page.window.devices[index]
+            // Modell und Seriennummer kennt nur der Fernseher, an dem wir haengen
+            property bool aktiv: index === page.window.currentIndex && page.tv.registered
 
             menu: ContextMenu {
                 MenuItem {
@@ -83,6 +94,7 @@ Page {
             }
 
             Column {
+                id: zeilen
                 x: Theme.horizontalPageMargin
                 width: parent.width - 2 * Theme.horizontalPageMargin
                 anchors.verticalCenter: parent.verticalCenter
@@ -94,10 +106,20 @@ Page {
                     truncationMode: TruncationMode.Fade
                 }
                 Label {
+                    visible: item.aktiv && page.tv.model.length > 0
+                    text: item.aktiv ? page.tv.model
+                          + (page.tv.serial.length > 0 ? "  ·  " + page.tv.serial : "") : ""
+                    font.pixelSize: Theme.fontSizeExtraSmall
+                    color: Theme.secondaryColor
+                    truncationMode: TruncationMode.Fade
+                }
+                Label {
                     text: item.dev ? (item.dev.host
+                          + (item.dev.mac && item.dev.mac.length > 0 ? "  ·  " + item.dev.mac : "")
                           + (item.dev.key && item.dev.key.length > 0 ? qsTr("  ·  paired") : "")) : ""
                     font.pixelSize: Theme.fontSizeExtraSmall
                     color: Theme.secondaryColor
+                    truncationMode: TruncationMode.Fade
                 }
             }
 

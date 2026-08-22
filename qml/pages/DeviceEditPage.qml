@@ -11,7 +11,7 @@ Page {
     readonly property var dev: (index >= 0 && index < window.devices.length)
                                ? window.devices[index] : null
 
-    allowedOrientations: Orientation.All
+    allowedOrientations: Orientation.Portrait
 
     SilicaFlickable {
         anchors.fill: parent

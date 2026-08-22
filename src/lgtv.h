@@ -34,6 +34,11 @@ class LgTv : public QObject
     Q_PROPERTY(QString statusText READ statusText NOTIFY statusTextChanged)
     /* Diagnose: was die SSL-Schicht und der Qt-Build hergeben */
     Q_PROPERTY(QString diagnostics READ diagnostics NOTIFY statusTextChanged)
+    // Vom verbundenen Fernseher gemeldet, fuer die Geraeteliste
+    Q_PROPERTY(QString model READ model NOTIFY deviceInfoChanged)
+    Q_PROPERTY(QString serial READ serial NOTIFY deviceInfoChanged)
+    // Ausgehandelte Verschluesselung, siehe requestTlsInfo
+    Q_PROPERTY(QString tlsVersion READ tlsVersion NOTIFY tlsInfoChanged)
     Q_PROPERTY(int volume READ volume NOTIFY volumeChanged)
     Q_PROPERTY(bool muted READ muted NOTIFY volumeChanged)
     // Falsch bei Ton ueber ARC: der TV zaehlt dann nur (volumeSyncable=false)
@@ -64,6 +69,11 @@ public:
     bool pointerReady() const { return m_pointerReady; }
     QString statusText() const { return m_status; }
     QString diagnostics() const;
+    QString tlsVersion() const { return m_tls; }
+    QString model() const { return m_model; }
+    QString serial() const { return m_serial; }
+    // QtWebSockets 5.5 gibt die ausgehandelte Sitzung nicht heraus
+    Q_INVOKABLE void requestTlsInfo();
     int volume() const { return m_volume; }
     bool muted() const { return m_muted; }
     bool volumeReliable() const { return m_volumeReliable; }
@@ -154,11 +164,14 @@ signals:
     void appsReceived(const QVariantList &apps);
     void inputsReceived(const QVariantList &inputs);
     void systemInfoReceived(const QVariantMap &info);
+    void tunerReceived(const QString &type);
+    void deviceInfoChanged();
     void networkInfoReceived(const QVariantMap &info);
     // MAC der aktiven Schnittstelle; nur der verbundene TV nennt sie
     void macDiscovered(const QString &mac);
     void audioStatusReceived(const QVariantMap &info);
     void softwareInfoReceived(const QVariantMap &info);
+    void tlsInfoChanged();
     void captureReady(const QString &url);
     void failed(const QString &message);
 
@@ -188,6 +201,9 @@ private:
     void handleDrop();
     void scheduleRetry();
     void sendRegister();
+    void askPointer();
+    void probeTls();
+    void relaunchYouTube();
     void stepVolume(int delta);
     QString request(const QString &uri, const QJsonObject &payload, Want want);
     void subscribe(const QString &uri, Want want,
@@ -244,6 +260,11 @@ private:
     bool m_alive = true;
     /* Wahr nur nach bewusstem Trennen - dann bleibt es getrennt. */
     bool m_userClosed = false;
+    int m_pointerTries = 0;
+    QString m_tls;
+    int m_tlsTries = 0;
+    QString m_model;
+    QString m_serial;
 
     int m_counter = 0;
     QHash<QString, Want> m_pending;

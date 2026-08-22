@@ -5,7 +5,9 @@
 #include <QCryptographicHash>
 #include <QGuiApplication>
 #include <QJsonArray>
+#include <QPointer>
 #include <QSslCertificate>
+#include <QSslCipher>
 #include <QSslConfiguration>
 #include <QStringList>
 #include <QSslSocket>
@@ -19,6 +21,19 @@
 #define YT_APP "youtube.leanback.v4"
 
 namespace {
+
+// Wie oft der Tastenkanal neu erfragt wird, bevor Ruhe einkehrt
+const int kPointerTries = 4;
+
+// Der TV nimmt hoechstens sechs Verbindungen an und raeumt aufgegebene
+// Versuche nur langsam ab - deshalb selten wiederholen
+const int kHandshakeWait = 4000;
+const int kFirstRetry = 3000;
+const int kRetryCap = 15000;
+
+// Anlaeufe fuer probeTls
+const int kTlsTries = 2;
+const int kTlsWait = 2000;
 
 // Anmelde-Handshake der LG-Fernseher. Der signed-Block wird nicht geprueft,
 // muss aber da sein.
@@ -85,7 +100,7 @@ LgTv::LgTv(QObject *parent)
 
     m_connect = new QTimer(this);
     m_connect->setSingleShot(true);
-    m_connect->setInterval(6000);
+    m_connect->setInterval(kHandshakeWait);
     connect(m_connect, &QTimer::timeout, this, [this]() {
         if (m_main.state() == QAbstractSocket::ConnectedState)
             return;
@@ -111,10 +126,10 @@ LgTv::LgTv(QObject *parent)
     m_retry->setSingleShot(true);
     connect(m_retry, &QTimer::timeout, this, [this]() {
         /* Abstand erst danach verdoppeln: der erste Versuch kommt schnell.
-           Deckel bei 8 s - der Fernseher weist Handshakes schubweise ab, und
-           mit 30 s Abstand steht die Oberflaeche unnoetig lange grau. Der
+           Deckel bei 15 s: jeder Versuch belegt einen der sechs Plaetze am
+           Fernseher, und zwar bis er ihn von sich aus abraeumt. Der
            Wiederholer laeuft ohnehin nur im Vordergrund. */
-        m_retryDelay = qMin(m_retryDelay * 2, 8000);
+        m_retryDelay = qMin(m_retryDelay * 2, kRetryCap);
         openMain();
     });
 
@@ -168,6 +183,64 @@ LgTv::LgTv(QObject *parent)
 }
 
 // Was bei einem fehlgeschlagenen Versuch zaehlt; steht in den Einstellungen
+/* Eigener Handschlag, weil QtWebSockets 5.5 die ausgehandelte Sitzung nicht
+   herausgibt. Ueber den Cipher gelesen - TlsV1_3 gibt es erst ab Qt 5.12. */
+void LgTv::requestTlsInfo()
+{
+    if (m_host.isEmpty()) {
+        m_tls = tr("not connected");
+        emit tlsInfoChanged();
+        return;
+    }
+    m_tlsTries = 0;
+    probeTls();
+}
+
+// Ein Anlauf genuegt nicht, wenn die sechs Plaetze belegt sind
+void LgTv::probeTls()
+{
+    QSslSocket *probe = new QSslSocket(this);
+    probe->setProperty("done", false);
+
+    // Gewachter Zeiger und Anschluesse am Socket: nach dem Abraeumen darf
+    // nichts mehr zugreifen
+    QPointer<QSslSocket> wache(probe);
+    auto finish = [this, wache](const QString &text) {
+        if (!wache || wache->property("done").toBool())
+            return;
+        wache->setProperty("done", true);
+        wache->abort();
+        wache->deleteLater();
+        if (!text.isEmpty()) {
+            m_tls = text;
+            emit tlsInfoChanged();
+            return;
+        }
+        // Leerer Text heisst: dieser Anlauf ging daneben
+        if (++m_tlsTries >= kTlsTries) {
+            m_tls = tr("no answer");
+            emit tlsInfoChanged();
+            return;
+        }
+        QTimer::singleShot(300, this, [this]() { probeTls(); });
+    };
+
+    connect(probe, &QSslSocket::encrypted, probe, [probe, finish]() {
+        const QSslCipher c = probe->sessionCipher();
+        finish(c.isNull() ? tr("unknown")
+                          : QStringLiteral("%1, %2").arg(c.protocolString(), c.name()));
+    });
+    // Geprueft wird das Zertifikat am Hauptkanal
+    connect(probe, static_cast<void (QSslSocket::*)(const QList<QSslError> &)>(&QSslSocket::sslErrors),
+            probe, [probe](const QList<QSslError> &) { probe->ignoreSslErrors(); });
+    connect(probe, static_cast<void (QAbstractSocket::*)(QAbstractSocket::SocketError)>(&QAbstractSocket::error),
+            probe, [finish](QAbstractSocket::SocketError) { finish(QString()); });
+    // Bleibt der Handschlag liegen, dann eben nicht
+    QTimer::singleShot(kTlsWait, probe, [finish]() { finish(QString()); });
+
+    probe->connectToHostEncrypted(m_host, 3001);
+}
+
 QString LgTv::diagnostics() const
 {
     QStringList out;
@@ -209,25 +282,58 @@ void LgTv::setCertFingerprint(const QString &f)
 /* Erste Verbindung merkt den Fingerabdruck, spaetere muessen ihn zeigen.
    Welche Fehler das Zertifikat sonst hat, ist gleichgueltig - massgeblich
    ist, dass es dasselbe Geraet ist. */
+/* Der TV schickt eine Kette; die Reihenfolge der Fehler liegt nicht in
+   unserer Hand. Gemeint ist sein eigenes Zertifikat - jenes, das keinem
+   anderen der Kette als Aussteller dient. */
 bool LgTv::acceptCert(const QList<QSslError> &errors)
 {
-    QByteArray fp;
+    QList<QSslCertificate> kette;
     for (const QSslError &e : errors) {
-        if (e.certificate().isNull())
-            continue;
-        fp = e.certificate().digest(QCryptographicHash::Sha256).toHex();
-        break;
+        const QSslCertificate c = e.certificate();
+        if (!c.isNull() && !kette.contains(c))
+            kette << c;
     }
-    if (fp.isEmpty())
+    if (kette.isEmpty())
         return false;
 
-    const QString shown = QString::fromLatin1(fp);
+    QSslCertificate blatt = kette.first();
+    for (const QSslCertificate &c : kette) {
+        bool istAussteller = false;
+        for (const QSslCertificate &d : kette) {
+            if (d != c && d.issuerInfo(QSslCertificate::CommonName)
+                          == c.subjectInfo(QSslCertificate::CommonName)) {
+                istAussteller = true;
+                break;
+            }
+        }
+        if (!istAussteller) {
+            blatt = c;
+            break;
+        }
+    }
+
+    const QString shown = QString::fromLatin1(
+        blatt.digest(QCryptographicHash::Sha256).toHex());
     if (m_certFingerprint.isEmpty()) {
         m_certFingerprint = shown;
         emit certFingerprintChanged();
         return true;
     }
-    return m_certFingerprint == shown;
+    if (m_certFingerprint == shown)
+        return true;
+
+    // Aeltere Fassungen merkten sich womoeglich die Zwischenstelle
+    for (const QSslCertificate &c : kette) {
+        if (m_certFingerprint == QString::fromLatin1(
+                c.digest(QCryptographicHash::Sha256).toHex())) {
+            m_certFingerprint = shown;
+            emit certFingerprintChanged();
+            return true;
+        }
+    }
+
+    qWarning() << "LgTv: fremdes Zertifikat" << shown << "erwartet" << m_certFingerprint;
+    return false;
 }
 
 void LgTv::setStatus(const QString &s)
@@ -246,7 +352,7 @@ void LgTv::connectTv()
     // ... dieser Versuch ist gewollt, disconnectTv hat das Gegenteil vermerkt
     m_userClosed = false;
     m_certBlocked = false;
-    m_retryDelay = 2000;
+    m_retryDelay = kFirstRetry;
     setStatus(tr("connecting ..."));
     openMain();
 }
@@ -291,7 +397,7 @@ void LgTv::onMainConnected()
     qWarning() << "LgTv: Verbindung offen, melde an";
     m_linkUp = true;
     m_alive = true;
-    m_retryDelay = 2000;
+    m_retryDelay = kFirstRetry;
     emit stateChanged();
     sendRegister();
 }
@@ -371,7 +477,7 @@ void LgTv::ensureConnected()
     if (m_userClosed)
         return;
     if (m_main.state() == QAbstractSocket::UnconnectedState) {
-        m_retryDelay = 2000;
+        m_retryDelay = kFirstRetry;
         setStatus(tr("connecting ..."));
         openMain();
         return;
@@ -395,13 +501,33 @@ void LgTv::onAppStateChanged(Qt::ApplicationState state)
 void LgTv::onPointerConnected()
 {
     m_pointerReady = true;
+    m_pointerTries = 0;
     emit stateChanged();
 }
 
+// Faellt der Tastenkanal weg, bleibt die Fernbedienung halb gesperrt
 void LgTv::onPointerDisconnected()
 {
     m_pointerReady = false;
     emit stateChanged();
+    askPointer();
+}
+
+void LgTv::askPointer()
+{
+    if (!m_registered || m_userClosed || m_pointerReady)
+        return;
+    if (m_pointerTries >= kPointerTries) {
+        setStatus(tr("key channel stays closed"));
+        return;
+    }
+    const int wait = ++m_pointerTries * 1000;
+    QTimer::singleShot(wait, this, [this]() {
+        if (!m_registered || m_userClosed || m_pointerReady)
+            return;
+        request(QStringLiteral("ssap://com.webos.service.networkinput/getPointerInputSocket"),
+                QJsonObject(), WantPointer);
+    });
 }
 
 // ---------- Anmeldung ----------
@@ -443,6 +569,7 @@ void LgTv::onMainMessage(const QString &text)
     if (type == QLatin1String("registered")) {
         qWarning() << "LgTv: angemeldet";
         m_registered = true;
+        m_pointerTries = 0;
         emit stateChanged();
         setStatus(tr("connected"));
 
@@ -481,6 +608,12 @@ void LgTv::onMainMessage(const QString &text)
         if (m_registered) {
             m_lastError = err;
             emit statusTextChanged();
+            // Die Abfrage ist weg, der Auftrag darf es nicht sein
+            const Want offen = m_pending.take(msg.value(QStringLiteral("id")).toString());
+            if (offen == WantAppState)
+                relaunchYouTube();
+            else if (offen == WantPointer)
+                askPointer();
             return;
         }
 
@@ -680,8 +813,17 @@ void LgTv::handlePayload(Want want, const QJsonObject &payload)
         QVariantMap m;
         m.insert(tr("Model"), payload.value(QStringLiteral("modelName")).toString());
         m.insert(tr("Serial number"), payload.value(QStringLiteral("serialNumber")).toString());
-        m.insert(tr("Tuner"), payload.value(QStringLiteral("receiverType")).toString());
         emit systemInfoReceived(m);
+
+        const QString modell = payload.value(QStringLiteral("modelName")).toString();
+        const QString nummer = payload.value(QStringLiteral("serialNumber")).toString();
+        if (modell != m_model || nummer != m_serial) {
+            m_model = modell;
+            m_serial = nummer;
+            emit deviceInfoChanged();
+        }
+        // Das Empfangsteil ist technisch ein Eingang und steht dort
+        emit tunerReceived(payload.value(QStringLiteral("receiverType")).toString());
         break;
     }
     case WantNetwork: {
@@ -728,8 +870,9 @@ void LgTv::handlePayload(Want want, const QJsonObject &payload)
         m.insert(tr("Volume"),
                  tr("%1 of %2").arg(v.value(QStringLiteral("volume")).toInt())
                      .arg(v.value(QStringLiteral("maxVolume")).toInt()));
-        m.insert(tr("Muted"),
-                 v.value(QStringLiteral("muteStatus")).toBool() ? tr("yes") : tr("no"));
+        // Zustand, keine Faehigkeit - daher an/aus statt ja/nein
+        m.insert(tr("Mute"),
+                 v.value(QStringLiteral("muteStatus")).toBool() ? tr("on") : tr("off"));
         m.insert(tr("External control"),
                  v.value(QStringLiteral("externalDeviceControl")).toBool() ? tr("yes") : tr("no"));
         m.insert(tr("Volume adjustable"),
@@ -984,6 +1127,18 @@ void LgTv::searchYouTube(const QString &text)
 void LgTv::refreshYouTubeState()
 {
     request(QStringLiteral("ssap://system.launcher/getAppState"), ytPayload(), WantAppState);
+}
+
+/* getAppState wird mit "403 access denied" abgewiesen. Ohne Zustandsauskunft
+   bleibt nur schliessen und neu starten. */
+void LgTv::relaunchYouTube()
+{
+    if (m_pendingSearch.isNull())
+        return;
+    const QString begriff = m_pendingSearch;
+    m_pendingSearch = QString();
+    request(QStringLiteral("ssap://system.launcher/close"), ytPayload(), WantNothing);
+    QTimer::singleShot(600, this, [this, begriff]() { launchYouTube(begriff); });
 }
 
 void LgTv::switchInput(const QString &id)

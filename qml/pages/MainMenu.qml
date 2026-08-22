@@ -8,24 +8,18 @@ PullDownMenu {
     property var window
 
     MenuItem {
-        text: qsTr("Settings")
-        onClicked: pageStack.push(Qt.resolvedUrl("SettingsPage.qml"),
-                                  { tv: tv, window: window })
+        text: qsTr("About")
+        onClicked: pageStack.push(Qt.resolvedUrl("AboutPage.qml"))
     }
     MenuItem {
-        text: qsTr("Devices")
+        text: qsTr("Connected devices")
         onClicked: pageStack.push(Qt.resolvedUrl("DevicesPage.qml"),
                                   { tv: tv, window: window })
     }
     MenuItem {
-        text: qsTr("Apps and inputs")
-        enabled: tv.registered
-        onClicked: pageStack.push(Qt.resolvedUrl("AppsPage.qml"), { tv: tv })
-    }
-    MenuItem {
-        text: qsTr("Screenshot of the TV")
-        enabled: tv.registered
-        onClicked: tv.captureScreen()
+        text: qsTr("Settings")
+        onClicked: pageStack.push(Qt.resolvedUrl("SettingsPage.qml"),
+                                  { tv: tv, window: window })
     }
     MenuItem {
         text: qsTr("System data")
@@ -34,11 +28,8 @@ PullDownMenu {
                                   { tv: tv, window: window })
     }
     MenuItem {
-        text: qsTr("About")
-        onClicked: pageStack.push(Qt.resolvedUrl("AboutPage.qml"))
-    }
-    MenuItem {
-        text: tv.linkUp ? qsTr("Disconnect") : qsTr("Connect")
-        onClicked: tv.linkUp ? tv.disconnectTv() : tv.connectTv()
+        text: qsTr("Apps and inputs")
+        enabled: tv.registered
+        onClicked: pageStack.push(Qt.resolvedUrl("AppsPage.qml"), { tv: tv })
     }
 }

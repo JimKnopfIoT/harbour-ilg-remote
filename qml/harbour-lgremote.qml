@@ -196,7 +196,8 @@ ApplicationWindow {
 
     initialPage: Component { RemotePage { tv: tvConn; window: app } }
     cover: Component { CoverPage { tv: tvConn } }
-    allowedOrientations: defaultAllowedOrientations
+    // Die Fernbedienung dreht nicht mit
+    allowedOrientations: Orientation.Portrait
 
     Component.onCompleted: {
         loadDevices()

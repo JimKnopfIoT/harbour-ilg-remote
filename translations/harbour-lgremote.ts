@@ -280,7 +280,7 @@ The keys run over a second channel whose address the TV only hands out on reques
     </message>
     <message>
         <location filename="../src/lgtv.cpp" line="151"/>
-        <location filename="../src/lgtv.cpp" line="485"/>
+        <location filename="../src/lgtv.cpp" line="487"/>
         <source>Error: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -291,9 +291,9 @@ The keys run over a second channel whose address the TV only hands out on reques
     </message>
     <message>
         <location filename="../src/lgtv.cpp" line="174"/>
-        <location filename="../src/lgtv.cpp" line="712"/>
-        <location filename="../src/lgtv.cpp" line="714"/>
-        <location filename="../src/lgtv.cpp" line="716"/>
+        <location filename="../src/lgtv.cpp" line="732"/>
+        <location filename="../src/lgtv.cpp" line="734"/>
+        <location filename="../src/lgtv.cpp" line="736"/>
         <source>yes</source>
         <translation type="unfinished"></translation>
     </message>
@@ -359,104 +359,104 @@ The keys run over a second channel whose address the TV only hands out on reques
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="609"/>
+        <location filename="../src/lgtv.cpp" line="611"/>
         <source>insertText: accepted</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="610"/>
+        <location filename="../src/lgtv.cpp" line="612"/>
         <source>insertText rejected: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="659"/>
+        <location filename="../src/lgtv.cpp" line="661"/>
         <source>no screenshot from the TV</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="679"/>
+        <location filename="../src/lgtv.cpp" line="681"/>
         <source>Model</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="680"/>
+        <location filename="../src/lgtv.cpp" line="682"/>
         <source>Serial number</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="681"/>
+        <location filename="../src/lgtv.cpp" line="683"/>
         <source>Tuner</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="689"/>
+        <location filename="../src/lgtv.cpp" line="691"/>
         <source>MAC wired</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="689"/>
+        <location filename="../src/lgtv.cpp" line="691"/>
         <source>MAC Wi-Fi</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="690"/>
+        <location filename="../src/lgtv.cpp" line="692"/>
         <source>MAC direct link</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="698"/>
+        <location filename="../src/lgtv.cpp" line="704"/>
         <source> - IP</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="707"/>
+        <location filename="../src/lgtv.cpp" line="727"/>
         <source>Sound output</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="708"/>
+        <location filename="../src/lgtv.cpp" line="728"/>
         <source>Volume</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="709"/>
+        <location filename="../src/lgtv.cpp" line="729"/>
         <source>%1 of %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="711"/>
+        <location filename="../src/lgtv.cpp" line="731"/>
         <source>Muted</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="712"/>
-        <location filename="../src/lgtv.cpp" line="714"/>
-        <location filename="../src/lgtv.cpp" line="716"/>
+        <location filename="../src/lgtv.cpp" line="732"/>
+        <location filename="../src/lgtv.cpp" line="734"/>
+        <location filename="../src/lgtv.cpp" line="736"/>
         <source>no</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="713"/>
+        <location filename="../src/lgtv.cpp" line="733"/>
         <source>External control</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="715"/>
+        <location filename="../src/lgtv.cpp" line="735"/>
         <source>Volume adjustable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="722"/>
+        <location filename="../src/lgtv.cpp" line="742"/>
         <source>Firmware</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="725"/>
+        <location filename="../src/lgtv.cpp" line="745"/>
         <source>Product</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="960"/>
+        <location filename="../src/lgtv.cpp" line="980"/>
         <source>YouTube: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -575,17 +575,22 @@ The keys run over a second channel whose address the TV only hands out on reques
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PanelPad.qml" line="242"/>
+        <location filename="../qml/pages/PanelPad.qml" line="223"/>
+        <source>no text field open on the TV</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PanelPad.qml" line="249"/>
         <source>search on YouTube</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PanelPad.qml" line="244"/>
+        <location filename="../qml/pages/PanelPad.qml" line="251"/>
         <source>opening keyboard on the TV ...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PanelPad.qml" line="245"/>
+        <location filename="../qml/pages/PanelPad.qml" line="252"/>
         <source>text to the TV</source>
         <translation type="unfinished"></translation>
     </message>
@@ -931,7 +936,7 @@ The keys run over a second channel whose address the TV only hands out on reques
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/harbour-lgremote.qml" line="182"/>
+        <location filename="../qml/harbour-lgremote.qml" line="193"/>
         <source>Screenshot saved: %1</source>
         <translation type="unfinished"></translation>
     </message>

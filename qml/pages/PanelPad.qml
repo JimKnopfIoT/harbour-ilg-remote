@@ -2,12 +2,45 @@ import QtQuick 2.0
 import Sailfish.Silica 1.0
 
 /* Dritte Karussellseite: die Flaeche als Mauszeiger, mit Rollbalken rechts
-   und unten. Von unten hochwischen blendet die Tastatur ein. */
+   und unten. Die Tastatur bleibt offen, solange die Seite vorn liegt. */
 Item {
     id: panel
 
     property var tv
     property var window
+    // Liegt diese Seite im Karussell vorn?
+    property bool current: true
+
+    onCurrentChanged: {
+        if (current) textField.forceActiveFocus()
+        else textField.focus = false
+    }
+    Component.onCompleted: {
+        console.log("PanelPad angelegt, current =", current)
+        if (current) textField.forceActiveFocus()
+    }
+
+    // Kleinste je gesehene Hoehe: die mit Tastatur. Danach richtet sich der
+    // Aufbau dauerhaft, sonst waechst die Zeigerflaeche wieder
+    property real festeHoehe: 0
+    onHeightChanged: if (height > 0 && (festeHoehe === 0 || height < festeHoehe))
+                         festeHoehe = height
+
+    // Fokus zurueckholen, egal wer ihn genommen hat
+    Timer {
+        id: fokusZurueck
+        interval: 400
+        // Waehrend des Tippens dazwischenzufunken loescht die Eingabe
+        onTriggered: if (panel.current && !textField.activeFocus
+                         && pageStack.depth === 1)
+                         textField.forceActiveFocus()
+    }
+
+    Connections {
+        target: textField
+        onActiveFocusChanged: if (!textField.activeFocus && panel.current)
+                                  fokusZurueck.restart()
+    }
 
     readonly property real strip: Theme.itemSizeSmall   // Breite der Rollbalken
 
@@ -25,13 +58,17 @@ Item {
             }
         }
 
-        Column {
-            anchors.fill: parent
-            spacing: Theme.paddingMedium
+        // Keine eigene Rechnerei mit der Tastaturhoehe - Silica kuerzt die
+        // Seite bereits selbst
+        Item {
+            id: bereich
+            anchors { left: parent.left; right: parent.right; top: parent.top }
+            height: panel.festeHoehe > 0 ? panel.festeHoehe : parent.height
 
             // Ohne diesen Streifen kaeme man von der Seite nicht mehr herunter
             Item {
-                width: parent.width
+                id: streifen
+                anchors { left: parent.left; right: parent.right; top: parent.top }
                 height: Theme.itemSizeSmall
 
                 Label {
@@ -44,9 +81,13 @@ Item {
 
             Item {
                 id: padArea
-                width: parent.width
-                height: parent.height - keyboardRow.height - Theme.itemSizeSmall
-                        - 2 * Theme.paddingMedium
+                anchors {
+                    left: parent.left
+                    right: parent.right
+                    top: streifen.bottom
+                    bottom: keyboardRow.top
+                    bottomMargin: Theme.paddingMedium
+                }
 
                 // ---------- Zeigerfläche ----------
 
@@ -87,7 +128,9 @@ Item {
                         property real lastY: 0
                         property bool dragged: false
 
-                        onPressed: { lastX = mouse.x; lastY = mouse.y; dragged = false }
+                        onPressed: {
+                            lastX = mouse.x; lastY = mouse.y; dragged = false
+                        }
 
                         onPositionChanged: {
                             var dx = mouse.x - lastX
@@ -135,7 +178,8 @@ Item {
                         // Erst ab einem Schwellwert rollen, sonst ist es zu nervoes
                         property real accum: 0
 
-                        onPressed: { last = mouse.y; accum = 0 }
+                        onPressed: { last = mouse.y; accum = 0
+                                     if (panel.current) textField.forceActiveFocus() }
                         onPositionChanged: {
                             accum += mouse.y - last
                             last = mouse.y
@@ -178,7 +222,8 @@ Item {
                         property real last: 0
                         property real accum: 0
 
-                        onPressed: { last = mouse.x; accum = 0 }
+                        onPressed: { last = mouse.x; accum = 0
+                                     if (panel.current) textField.forceActiveFocus() }
                         onPositionChanged: {
                             accum += mouse.x - last
                             last = mouse.x
@@ -197,36 +242,52 @@ Item {
 
             Row {
                 id: keyboardRow
-                x: Theme.horizontalPageMargin
-                width: parent.width - 2 * Theme.horizontalPageMargin
+                anchors {
+                    left: parent.left
+                    right: parent.right
+                    bottom: parent.bottom
+                    leftMargin: Theme.horizontalPageMargin
+                    rightMargin: Theme.horizontalPageMargin
+                    bottomMargin: Theme.paddingMedium
+                }
                 spacing: Theme.paddingSmall
 
                 property real keySize: Theme.itemSizeExtraSmall
 
-                /* Die Bildschirmtastatur schliesst sich von selbst, und nur
-                   offen nimmt der TV Text an - deshalb gemerkt statt gesperrt. */
+                // Die Tastatur des TV schliesst sich von selbst - gemerkt
+                // statt gesperrt
                 property bool waiting: false
 
+                // Zwei getrennte Knoepfe statt eines geratenen: nach dem
+                // Vordergrund fragen geht nicht mehr (403)
                 function send() {
                     if (textField.text.length === 0) return
                     if (panel.tv.textInputReady) {
                         panel.tv.insertText(textField.text)
                         textField.text = ""
-                        textField.focus = false
+                        textField.forceActiveFocus()
                         waiting = false
                         return
                     }
-                    // Meldet der TV kein Feld, waere ENTER ein blinder
-                    // Tastendruck - er landet auf dem hervorgehobenen Element
+                    /* Kein gemeldetes Feld heisst: die App im Vordergrund malt
+                       ihre eigene Tastatur, wie YouTube. Dorthin kommt kein
+                       Text, und ENTER druecke nur die markierte Taste. */
                     if (panel.tv.textInputType.length === 0) {
                         waiting = false
-                        panel.tv.note(qsTr("no text field open on the TV"))
+                        panel.tv.note(qsTr("no text field on the TV - use the magnifier for YouTube"))
                         return
                     }
-                    // ENTER oeffnet die Tastatur am Cursor; danach geht der
-                    // Text von selbst raus
+                    // Feld da, Tastatur zu: ENTER oeffnet sie am Cursor
                     waiting = true
                     panel.tv.button("ENTER")
+                }
+
+                function search() {
+                    if (textField.text.length === 0) return
+                    panel.tv.searchYouTube(textField.text)
+                    textField.text = ""
+                    textField.focus = false
+                    waiting = false
                 }
 
                 Connections {
@@ -243,13 +304,11 @@ Item {
 
                 TextField {
                     id: textField
-                    width: parent.width - 3 * (keyboardRow.keySize + Theme.paddingSmall)
+                    width: keyboardRow.width - 4 * (keyboardRow.keySize + Theme.paddingSmall)
                     enabled: panel.tv.registered
-                    placeholderText: panel.tv.youtubeAhead
-                                     ? qsTr("search on YouTube")
-                                     : keyboardRow.waiting
-                                       ? qsTr("opening keyboard on the TV ...")
-                                       : qsTr("text to the TV")
+                    placeholderText: keyboardRow.waiting
+                                     ? qsTr("opening keyboard on the TV ...")
+                                     : qsTr("text to the TV")
                     EnterKey.iconSource: "image://theme/icon-m-enter-accept"
                     EnterKey.onClicked: keyboardRow.send()
 
@@ -260,22 +319,24 @@ Item {
 
                 /* Eine Taste, zwei Wege - das Symbol verraet, welcher gilt:
                    Suchbegriff als Startparameter oder Text ins Feld. */
+                // Text in das Feld am Fernseher
                 IconKey {
                     anchors.verticalCenter: textField.verticalCenter
-                    icon: panel.tv.youtubeAhead ? "icon-m-search" : "icon-m-accept"
+                    icon: "icon-m-accept"
                     size: keyboardRow.keySize
                     enabled: panel.tv.registered && textField.text.length > 0
                     opacity: enabled ? 1.0 : 0.3
-                    onPressed: {
-                        if (panel.tv.youtubeAhead) {
-                            panel.tv.searchYouTube(textField.text)
-                            textField.text = ""
-                            textField.focus = false
-                            keyboardRow.waiting = false
-                        } else {
-                            keyboardRow.send()
-                        }
-                    }
+                    onPressed: keyboardRow.send()
+                }
+
+                // Suchbegriff als Startparameter an YouTube, ohne Tastatur
+                IconKey {
+                    anchors.verticalCenter: textField.verticalCenter
+                    icon: "icon-m-search"
+                    size: keyboardRow.keySize
+                    enabled: panel.tv.registered && textField.text.length > 0
+                    opacity: enabled ? 1.0 : 0.3
+                    onPressed: keyboardRow.search()
                 }
 
                 IconKey {
@@ -291,7 +352,7 @@ Item {
                     anchors.verticalCenter: textField.verticalCenter
                     icon: "icon-m-clear"
                     size: keyboardRow.keySize
-                    onPressed: { textField.text = ""; textField.focus = false }
+                    onPressed: { textField.text = ""; textField.forceActiveFocus() }
                 }
             }
 

@@ -191,6 +191,14 @@ Die Tasten laufen über einen zweiten Kanal, dessen Adresse der Fernseher erst a
         <source>Search from the menu or add one manually</source>
         <translation>Über das Menü suchen oder von Hand hinzufügen</translation>
     </message>
+    <message>
+        <source>Disconnect</source>
+        <translation>Trennen</translation>
+    </message>
+    <message>
+        <source>Connect</source>
+        <translation>Verbinden</translation>
+    </message>
 </context>
 <context>
     <name>LgTv</name>
@@ -303,10 +311,6 @@ Die Tasten laufen über einen zweiten Kanal, dessen Adresse der Fernseher erst a
         <translation>Seriennummer</translation>
     </message>
     <message>
-        <source>Tuner</source>
-        <translation>Empfangsteil</translation>
-    </message>
-    <message>
         <source>MAC wired</source>
         <translation>MAC Kabel</translation>
     </message>
@@ -333,10 +337,6 @@ Die Tasten laufen über einen zweiten Kanal, dessen Adresse der Fernseher erst a
     <message>
         <source>%1 of %2</source>
         <translation>%1 von %2</translation>
-    </message>
-    <message>
-        <source>Muted</source>
-        <translation>Stumm</translation>
     </message>
     <message>
         <source>no</source>
@@ -370,16 +370,36 @@ Die Tasten laufen über einen zweiten Kanal, dessen Adresse der Fernseher erst a
         <source>no answer while connecting</source>
         <translation>keine Antwort beim Verbinden</translation>
     </message>
+    <message>
+        <source>key channel stays closed</source>
+        <translation>Tastenkanal bleibt zu</translation>
+    </message>
+    <message>
+        <source>not connected</source>
+        <translation>nicht verbunden</translation>
+    </message>
+    <message>
+        <source>Mute</source>
+        <translation>Stummschaltung</translation>
+    </message>
+    <message>
+        <source>on</source>
+        <translation>ein</translation>
+    </message>
+    <message>
+        <source>off</source>
+        <translation>aus</translation>
+    </message>
+    <message>
+        <source>no answer</source>
+        <translation>keine Antwort</translation>
+    </message>
 </context>
 <context>
     <name>MainMenu</name>
     <message>
         <source>Settings</source>
         <translation>Einstellungen</translation>
-    </message>
-    <message>
-        <source>Devices</source>
-        <translation>Geräte</translation>
     </message>
     <message>
         <source>Apps and inputs</source>
@@ -394,16 +414,8 @@ Die Tasten laufen über einen zweiten Kanal, dessen Adresse der Fernseher erst a
         <translation>Über</translation>
     </message>
     <message>
-        <source>Disconnect</source>
-        <translation>Trennen</translation>
-    </message>
-    <message>
-        <source>Connect</source>
-        <translation>Verbinden</translation>
-    </message>
-    <message>
-        <source>Screenshot of the TV</source>
-        <translation>Bildschirmfoto vom Fernseher</translation>
+        <source>Connected devices</source>
+        <translation>Verbundene Geräte</translation>
     </message>
 </context>
 <context>
@@ -464,20 +476,16 @@ Die Tasten laufen über einen zweiten Kanal, dessen Adresse der Fernseher erst a
         <translation>nicht verbunden</translation>
     </message>
     <message>
-        <source>search on YouTube</source>
-        <translation>bei YouTube suchen</translation>
-    </message>
-    <message>
-        <source>opening keyboard on the TV ...</source>
-        <translation>öffne Tastatur am Fernseher ...</translation>
-    </message>
-    <message>
         <source>text to the TV</source>
         <translation>Text an den Fernseher</translation>
     </message>
     <message>
-        <source>no text field open on the TV</source>
-        <translation>kein Textfeld am Fernseher offen</translation>
+        <source>opening keyboard on the TV ...</source>
+        <translation>oeffne Tastatur am Fernseher ...</translation>
+    </message>
+    <message>
+        <source>no text field on the TV - use the magnifier for YouTube</source>
+        <translation>kein Textfeld am Fernseher - für YouTube die Lupe nehmen</translation>
     </message>
 </context>
 <context>
@@ -566,10 +574,6 @@ Die Tasten laufen über einen zweiten Kanal, dessen Adresse der Fernseher erst a
         <translation>nicht hinterlegt</translation>
     </message>
     <message>
-        <source>Manage devices</source>
-        <translation>Geräte verwalten</translation>
-    </message>
-    <message>
         <source>Wake-on-LAN has to be enabled on the TV: Settings → General → External devices → Turn on via mobile device.</source>
         <translation>Wake-on-LAN muss am Fernseher aktiviert sein: Einstellungen → Allgemein → Externe Geräte → Über Mobilgerät einschalten.</translation>
     </message>
@@ -628,6 +632,30 @@ Die Tasten laufen über einen zweiten Kanal, dessen Adresse der Fernseher erst a
     <message>
         <source>Send</source>
         <translation>Senden</translation>
+    </message>
+    <message>
+        <source>Yedi master</source>
+        <translation>Yedi-Master</translation>
+    </message>
+    <message>
+        <source>Claim priority</source>
+        <translation>Vorrang beanspruchen</translation>
+    </message>
+    <message>
+        <source>While this app is in the foreground, the Android remotes in the house lock themselves. Put the phone away and they release after a minute.</source>
+        <translation>Solange diese App im Vordergrund ist, sperren sich die Android-Fernbedienungen im Haus. Legst du das Telefon weg, geben sie nach einer Minute wieder frei.</translation>
+    </message>
+    <message>
+        <source>Home Assistant</source>
+        <translation>Home Assistant</translation>
+    </message>
+    <message>
+        <source>Access token</source>
+        <translation>Zugangstoken</translation>
+    </message>
+    <message>
+        <source>long-lived token from Home Assistant</source>
+        <translation>langlebiges Token aus Home Assistant</translation>
     </message>
     <message>
         <source>State</source>
@@ -735,6 +763,14 @@ Die Tasten laufen über einen zweiten Kanal, dessen Adresse der Fernseher erst a
     <message>
         <source>Reload</source>
         <translation>Neu einlesen</translation>
+    </message>
+    <message>
+        <source>Encryption</source>
+        <translation>Verschluesselung</translation>
+    </message>
+    <message>
+        <source>Tuner</source>
+        <translation>Empfangsteil</translation>
     </message>
 </context>
 <context>
