@@ -20,7 +20,7 @@ Item {
 
         PushUpMenu {
             MenuItem {
-                text: "Tastatur einblenden"
+                text: qsTr("Show keyboard")
                 onClicked: textField.forceActiveFocus()
             }
         }
@@ -29,16 +29,14 @@ Item {
             anchors.fill: parent
             spacing: Theme.paddingMedium
 
-            /* Streifen zum Blättern. Die Zeigerfläche darunter faengt jede
-               Fingerbewegung ab - ohne diesen Streifen kaeme man von der
-               Seite nicht mehr herunter. */
+            // Ohne diesen Streifen kaeme man von der Seite nicht mehr herunter
             Item {
                 width: parent.width
                 height: Theme.itemSizeSmall
 
                 Label {
                     anchors.centerIn: parent
-                    text: "◀   hier wischen zum Blättern   ▶"
+                    text: qsTr("◀   swipe here to change page   ▶")
                     font.pixelSize: Theme.fontSizeExtraSmall
                     color: Theme.rgba(Theme.secondaryColor, 0.7)
                 }
@@ -74,7 +72,7 @@ Item {
 
                         Label {
                             anchors.horizontalCenter: parent.horizontalCenter
-                            text: "nicht verbunden"
+                            text: qsTr("not connected")
                             color: Theme.secondaryColor
                             font.pixelSize: Theme.fontSizeSmall
                         }
@@ -171,11 +169,8 @@ Item {
                         font.pixelSize: Theme.fontSizeSmall
                     }
 
-                    /* Kein Rollbefehl: webOS wertet beim Rollen nur die
-                       senkrechte Achse aus, der waagerechte Wert wird
-                       verworfen. Deshalb hier Links/Rechts als Tastendruck -
-                       das ist in den Oberflaechen des Fernsehers ohnehin die
-                       waagerechte Navigation. */
+                    /* Kein Rollbefehl: webOS verwirft beim Rollen die
+                       waagerechte Achse. Also Links/Rechts als Tastendruck. */
                     MouseArea {
                         anchors.fill: parent
                         enabled: panel.tv.pointerReady
@@ -187,9 +182,8 @@ Item {
                         onPositionChanged: {
                             accum += mouse.x - last
                             last = mouse.x
-                            // Deutlich groesserer Schwellwert als beim Rollen:
-                            // ein Tastendruck springt eine ganze Auswahl weiter,
-                            // da rauscht es sonst durch
+                            // Groesserer Schwellwert: ein Tastendruck springt
+                            // eine ganze Auswahl weiter
                             while (Math.abs(accum) >= 90) {
                                 panel.tv.button(accum > 0 ? "RIGHT" : "LEFT")
                                 accum += accum > 0 ? -90 : 90
@@ -209,11 +203,8 @@ Item {
 
                 property real keySize: Theme.itemSizeExtraSmall
 
-                /* Die Bildschirmtastatur des Fernsehers schliesst sich nach
-                   wenigen Sekunden von selbst, und nur solange sie offen ist,
-                   nimmt er Text an. Deshalb wird nicht gesperrt, sondern
-                   gemerkt: der Text geht raus, sobald wieder ein Feld offen
-                   ist. */
+                /* Die Bildschirmtastatur schliesst sich von selbst, und nur
+                   offen nimmt der TV Text an - deshalb gemerkt statt gesperrt. */
                 property bool waiting: false
 
                 function send() {
@@ -225,10 +216,8 @@ Item {
                         waiting = false
                         return
                     }
-                    /* Kein Feld bereit: ENTER oeffnet die Bildschirmtastatur
-                       auf dem Feld, in dem der Cursor steht - am Geraet
-                       nachgewiesen, focus springt danach auf true. Der Text
-                       geht dann automatisch raus. */
+                    // ENTER oeffnet die Tastatur am Cursor; danach geht der
+                    // Text von selbst raus
                     waiting = true
                     panel.tv.button("ENTER")
                 }
@@ -250,25 +239,20 @@ Item {
                     width: parent.width - 3 * (keyboardRow.keySize + Theme.paddingSmall)
                     enabled: panel.tv.registered
                     placeholderText: panel.tv.youtubeAhead
-                                     ? "bei YouTube suchen"
+                                     ? qsTr("search on YouTube")
                                      : keyboardRow.waiting
-                                       ? "öffne Tastatur am Fernseher ..."
-                                       : "Text an den Fernseher"
+                                       ? qsTr("opening keyboard on the TV ...")
+                                       : qsTr("text to the TV")
                     EnterKey.iconSource: "image://theme/icon-m-enter-accept"
                     EnterKey.onClicked: keyboardRow.send()
 
-                    /* Beim ersten Zeichen nachfragen, was auf dem Bildschirm
-                       steht: Das Abo meldet zuverlaessig, wenn YouTube
-                       verschwindet, der Rueckweg kam im Test nicht immer an.
-                       Bis zum Tippen des Begriffs ist die Antwort da. */
+                    // Beim ersten Zeichen nachfragen; das Abo meldet nur das
+                    // Verschwinden zuverlaessig
                     onTextChanged: if (text.length === 1) panel.tv.refreshYouTubeState()
                 }
 
-                /* Eine Taste, zwei Wege - das Symbol verraet, welcher gilt.
-                   Laeuft YouTube, faehrt der Begriff als Startparameter mit und
-                   die App oeffnet die Trefferliste; dafuer braucht es weder ein
-                   Textfeld am Fernseher noch die Bildschirmtastatur. Sonst geht
-                   der Text den gewohnten Weg in das Feld am Fernseher. */
+                /* Eine Taste, zwei Wege - das Symbol verraet, welcher gilt:
+                   Suchbegriff als Startparameter oder Text ins Feld. */
                 IconKey {
                     anchors.verticalCenter: textField.verticalCenter
                     icon: panel.tv.youtubeAhead ? "icon-m-search" : "icon-m-accept"

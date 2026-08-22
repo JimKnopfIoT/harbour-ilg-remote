@@ -27,3 +27,6 @@ documentation.list
 # Local notes and private bits - never publish
 .claude/
 CLAUDE.md
+
+# Compiled translations (built from the .ts)
+*.qm

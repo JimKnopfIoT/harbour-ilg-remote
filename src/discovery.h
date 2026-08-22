@@ -5,16 +5,14 @@
 #include <QSet>
 #include <QString>
 
+class QTcpSocket;
+class QTimer;
 class QUdpSocket;
 class QNetworkAccessManager;
 
 /*
- * Sucht LG-Fernseher im Netz per SSDP.
- *
- * Der Fernseher meldet sich auf eine Suchanfrage nach
- * "urn:lge-com:service:webos-second-screen:1" und nennt dabei die Adresse
- * einer Beschreibungsdatei. Aus der holen wir den Anzeigenamen - sonst
- * stuende in der Liste nur eine nackte IP.
+ * Sucht LG-Fernseher im Netz: erst SSDP, dann - falls nichts antwortet -
+ * das eigene /24 auf Port 3001.
  */
 class Discovery : public QObject
 {
@@ -38,12 +36,20 @@ private slots:
     void readResponses();
 
 private:
+    void sendSearch();
+    void closeSocket();
+    void sweep();
+    void probeDone(QTcpSocket *s, const QString &host, bool open);
     void fetchName(const QString &host, const QString &location);
     void setRunning(bool r);
 
     QUdpSocket *m_socket = nullptr;
     QNetworkAccessManager *m_net = nullptr;
+    QTimer *m_repeat = nullptr;
+    QTimer *m_deadline = nullptr;
     QSet<QString> m_seen;
+    int m_rounds = 0;
+    int m_probes = 0;
     bool m_running = false;
 };
 

@@ -1,6 +1,6 @@
 TARGET = harbour-lgremote
 
-CONFIG += sailfishapp
+CONFIG += sailfishapp sailfishapp_i18n
 QT += network websockets
 
 SOURCES += \
@@ -8,13 +8,21 @@ SOURCES += \
     src/discovery.cpp \
     src/lgtv.cpp \
     src/portscan.cpp \
+    src/tvicons.cpp \
     src/wol.cpp
 
 HEADERS += \
     src/discovery.h \
     src/lgtv.h \
     src/portscan.h \
+    src/tvicons.h \
     src/wol.h
+
+TRANSLATIONS += translations/harbour-lgremote-de.ts
+
+lupdate_only {
+    SOURCES += qml/*.qml qml/cover/*.qml qml/pages/*.qml
+}
 
 DISTFILES += \
     qml/harbour-lgremote.qml \
@@ -32,11 +40,12 @@ DISTFILES += \
     qml/pages/DeviceEditPage.qml \
     qml/pages/SettingsPage.qml \
     qml/cover/CoverPage.qml \
+    qml/images/shutter.png \
     qml/images/tv.png \
     qml/images/youtube.png \
     qml/images/jellyfin.png \
-    qml/images/balkon.png \
     rpm/harbour-lgremote.spec \
-    harbour-lgremote.desktop
+    harbour-lgremote.desktop \
+    translations/harbour-lgremote-de.ts
 
 SAILFISHAPP_ICONS = 86x86 108x108 128x128 172x172

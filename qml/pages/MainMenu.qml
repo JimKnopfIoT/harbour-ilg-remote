@@ -8,32 +8,37 @@ PullDownMenu {
     property var window
 
     MenuItem {
-        text: "Einstellungen"
+        text: qsTr("Settings")
         onClicked: pageStack.push(Qt.resolvedUrl("SettingsPage.qml"),
                                   { tv: tv, window: window })
     }
     MenuItem {
-        text: "Geräte"
+        text: qsTr("Devices")
         onClicked: pageStack.push(Qt.resolvedUrl("DevicesPage.qml"),
                                   { tv: tv, window: window })
     }
     MenuItem {
-        text: "Apps und Eingänge"
+        text: qsTr("Apps and inputs")
         enabled: tv.registered
         onClicked: pageStack.push(Qt.resolvedUrl("AppsPage.qml"), { tv: tv })
     }
     MenuItem {
-        text: "Systemdaten"
+        text: qsTr("Screenshot of the TV")
+        enabled: tv.registered
+        onClicked: tv.captureScreen()
+    }
+    MenuItem {
+        text: qsTr("System data")
         enabled: tv.registered
         onClicked: pageStack.push(Qt.resolvedUrl("SystemPage.qml"),
                                   { tv: tv, window: window })
     }
     MenuItem {
-        text: "Über"
+        text: qsTr("About")
         onClicked: pageStack.push(Qt.resolvedUrl("AboutPage.qml"))
     }
     MenuItem {
-        text: tv.linkUp ? "Trennen" : "Verbinden"
+        text: tv.linkUp ? qsTr("Disconnect") : qsTr("Connect")
         onClicked: tv.linkUp ? tv.disconnectTv() : tv.connectTv()
     }
 }

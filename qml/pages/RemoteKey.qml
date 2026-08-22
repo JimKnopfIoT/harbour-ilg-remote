@@ -1,8 +1,7 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
 
-/* Eine Taste der Fernbedienung. blank=true erzeugt eine unsichtbare
-   Luecke, damit sich das Steuerkreuz sauber im Raster anordnen laesst. */
+// Taste der Fernbedienung; blank=true ist eine Luecke im Raster
 MouseArea {
     id: key
 
@@ -13,10 +12,8 @@ MouseArea {
     property real fontSize: Theme.fontSizeExtraLarge
     property bool round: false
 
-    /* Bei repeatable loest langes Halten wiederholt aus - fuer Lautstaerke
-       und Kanal, wo man selten nur einen Schritt will. Die Lautstaerke braucht
-       einen groesseren Abstand, weil der Fernseher jeden Schritt per CEC an
-       das Tongeraet weiterreicht und das langsamer ist. */
+    /* repeatable: langes Halten loest wiederholt aus. Die Lautstaerke
+       braucht dabei mehr Abstand, weil CEC langsamer ist. */
     property bool repeatable: false
     property int repeatInterval: 300
     signal activated()

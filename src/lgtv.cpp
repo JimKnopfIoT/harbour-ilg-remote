@@ -1,7 +1,11 @@
 #include "lgtv.h"
 
+#include <algorithm>
+
+#include <QCryptographicHash>
 #include <QGuiApplication>
 #include <QJsonArray>
+#include <QSslCertificate>
 #include <QSslConfiguration>
 #include <QStringList>
 #include <QSslSocket>
@@ -11,14 +15,13 @@
 #include <QTimer>
 #include <QUrl>
 
-/* Unsere werbefreie YouTube-App. Nicht youtube.leanback.v4 - diese ID gehoert
-   der eingebauten App mit Werbung, siehe DEV-APPS.md. */
+/* Die YouTube-App des Fernsehers. Meldet handlesRelaunch, siehe launchApp. */
 #define YT_APP "youtube.leanback.v4"
 
 namespace {
 
-/* Der Anmelde-Handshake, den LG-Fernseher erwarten. Der signed-Block wird
-   von der Firmware nicht geprueft, muss aber vorhanden sein. */
+// Anmelde-Handshake der LG-Fernseher. Der signed-Block wird nicht geprueft,
+// muss aber da sein.
 const char *kManifest = R"JSON({
   "manifestVersion": 1,
   "appVersion": "1.0",
@@ -26,7 +29,7 @@ const char *kManifest = R"JSON({
     "created": "20140509",
     "appId": "com.lge.test",
     "vendorId": "com.lge",
-    "localizedAppNames": { "": "LG Fernbedienung" },
+    "localizedAppNames": { "": "LG Remote" },
     "localizedVendorNames": { "": "LG Electronics" },
     "permissions": ["TEST_SECURE","CONTROL_INPUT_TEXT","CONTROL_MOUSE_AND_KEYBOARD",
       "READ_INSTALLED_APPS","READ_LGE_SDX","READ_NOTIFICATIONS","SEARCH","WRITE_SETTINGS",
@@ -50,13 +53,13 @@ const char *kManifest = R"JSON({
 QString prettySoundOutput(const QString &id)
 {
     if (id == QLatin1String("external_arc"))     return QStringLiteral("HDMI ARC (external_arc)");
-    if (id == QLatin1String("external_speaker")) return QStringLiteral("externer Lautsprecher");
-    if (id == QLatin1String("external_optical")) return QStringLiteral("optisch");
-    if (id == QLatin1String("tv_speaker"))       return QStringLiteral("TV-Lautsprecher");
-    if (id == QLatin1String("bt_soundbar"))      return QStringLiteral("Bluetooth-Soundbar");
+    if (id == QLatin1String("external_speaker")) return LgTv::tr("external speaker");
+    if (id == QLatin1String("external_optical")) return LgTv::tr("optical");
+    if (id == QLatin1String("tv_speaker"))       return LgTv::tr("TV speaker");
+    if (id == QLatin1String("bt_soundbar"))      return LgTv::tr("Bluetooth soundbar");
     if (id == QLatin1String("tv_external_speaker"))
-        return QStringLiteral("TV-Lautsprecher + extern");
-    return id.isEmpty() ? QStringLiteral("unbekannt") : id;
+        return LgTv::tr("TV speaker + external");
+    return id.isEmpty() ? LgTv::tr("unknown") : id;
 }
 
 } // namespace
@@ -66,7 +69,7 @@ LgTv::LgTv(QObject *parent)
     , m_main(QString(), QWebSocketProtocol::VersionLatest)
     , m_pointer(QString(), QWebSocketProtocol::VersionLatest)
     , m_host(QStringLiteral(""))
-    , m_status(QStringLiteral("getrennt"))
+    , m_status(tr("disconnected"))
 {
     connect(&m_main, &QWebSocket::connected, this, &LgTv::onMainConnected);
     connect(&m_main, &QWebSocket::disconnected, this, &LgTv::onMainDisconnected);
@@ -78,6 +81,18 @@ LgTv::LgTv(QObject *parent)
     // Jede Antwort des Fernsehers zaehlt als Lebenszeichen, auch das Pong
     connect(&m_main, &QWebSocket::pong, this, [this](quint64, const QByteArray &) {
         m_alive = true;
+    });
+
+    m_connect = new QTimer(this);
+    m_connect->setSingleShot(true);
+    m_connect->setInterval(6000);
+    connect(m_connect, &QTimer::timeout, this, [this]() {
+        if (m_main.state() == QAbstractSocket::ConnectedState)
+            return;
+        qWarning() << "LgTv: keine Antwort beim Handshake - abbrechen";
+        setStatus(tr("no answer while connecting"));
+        m_main.abort();
+        scheduleRetry();
     });
 
     m_beat = new QTimer(this);
@@ -95,44 +110,45 @@ LgTv::LgTv(QObject *parent)
     m_retry = new QTimer(this);
     m_retry->setSingleShot(true);
     connect(m_retry, &QTimer::timeout, this, [this]() {
-        // Abstand erst danach verdoppeln: der erste Versuch kommt schnell
-        m_retryDelay = qMin(m_retryDelay * 2, 30000);
+        /* Abstand erst danach verdoppeln: der erste Versuch kommt schnell.
+           Deckel bei 8 s - der Fernseher weist Handshakes schubweise ab, und
+           mit 30 s Abstand steht die Oberflaeche unnoetig lange grau. Der
+           Wiederholer laeuft ohnehin nur im Vordergrund. */
+        m_retryDelay = qMin(m_retryDelay * 2, 8000);
         openMain();
     });
 
-    /* Der haeufigste Fall: das Telefon war weg, die Verbindung ist tot, und
-       niemand hat es bemerkt. Beim Zurueckholen der App also nachsehen -
-       und im Hintergrund nicht sinnlos weiterfunken. */
+    // Beim Zurueckholen nachsehen, im Hintergrund ruhen
     connect(qGuiApp, &QGuiApplication::applicationStateChanged,
             this, &LgTv::onAppStateChanged);
 
-    // Zwei Zugestaendnisse sind noetig, damit ueberhaupt eine Verbindung
-    // zustande kommt:
-    //
-    // 1. Protokollversion fest auf TLS 1.2. Der Fernseher bevorzugt TLS 1.3
-    //    und lehnt alles unter 1.2 ab; Qt 5.6 kennt 1.3 noch nicht und
-    //    handelt sonst eine zu alte Version aus. Der Fernseher schliesst
-    //    dann kommentarlos - in der App sichtbar als
-    //    "Remote host closed the connection".
-    // 2. Keine Zertifikatspruefung. Der Fernseher weist sich mit einem
-    //    selbstsignierten Zertifikat aus (CN=LGE TV SSG). Im eigenen
-    //    Heimnetz gegen eine feste Adresse ist das hinnehmbar.
+    /* Der Fernseher nimmt 1.2 wie 1.3, weist Handshakes aber zeitweise ohne
+       Antwort ab - in der App sichtbar als "Remote host closed the
+       connection", dagegen hilft nur der Wiederholer. Die Version bleibt
+       deshalb der Bibliothek ueberlassen, statt auf 1.2 festgenagelt zu sein. */
     QSslConfiguration ssl = QSslConfiguration::defaultConfiguration();
-    ssl.setProtocol(QSsl::TlsV1_2);
-    ssl.setPeerVerifyMode(QSslSocket::VerifyNone);
+    ssl.setProtocol(QSsl::TlsV1_2OrLater);
 
-    auto relax = [&ssl](QWebSocket *s) {
+    // Selbstsigniert, also beim ersten Mal merken und danach vergleichen
+    auto pin = [this, &ssl](QWebSocket *s) {
         s->setSslConfiguration(ssl);
         connect(s, static_cast<void (QWebSocket::*)(const QList<QSslError> &)>(&QWebSocket::sslErrors),
-                s, static_cast<void (QWebSocket::*)()>(&QWebSocket::ignoreSslErrors));
+                this, [this, s](const QList<QSslError> &errors) {
+                    if (acceptCert(errors)) {
+                        s->ignoreSslErrors();
+                        return;
+                    }
+                    m_certBlocked = true;
+                    setStatus(tr("Certificate does not match - reset the pairing"));
+                });
     };
-    relax(&m_main);
-    relax(&m_pointer);
+    pin(&m_main);
+    pin(&m_pointer);
 
     connect(&m_main, static_cast<void (QWebSocket::*)(QAbstractSocket::SocketError)>(&QWebSocket::error),
             this, [this](QAbstractSocket::SocketError) {
                 qWarning() << "LgTv: Socketfehler:" << m_main.errorString();
-                setStatus(QStringLiteral("Fehler: ") + m_main.errorString());
+                setStatus(tr("Error: %1").arg(m_main.errorString()));
                 emit failed(m_main.errorString());
                 /* Scheitert schon der Verbindungsaufbau - Fernseher aus,
                    Netz noch nicht da -, kommt nur dieses Signal und kein
@@ -140,8 +156,7 @@ LgTv::LgTv(QObject *parent)
                 scheduleRetry();
             });
 
-    // Zertifikatsfehler zusaetzlich sichtbar machen. Ohne das sieht man nur
-    // "Remote host closed the connection" und weiss nicht, ob es an TLS lag.
+    // Zertifikatsfehler sichtbar machen - sonst raet man bei TLS-Problemen
     connect(&m_main, static_cast<void (QWebSocket::*)(const QList<QSslError> &)>(&QWebSocket::sslErrors),
             this, [this](const QList<QSslError> &errors) {
                 QStringList texts;
@@ -152,19 +167,17 @@ LgTv::LgTv(QObject *parent)
             });
 }
 
-/* Alles, was bei einem fehlgeschlagenen Verbindungsversuch zaehlt – wird in
-   den Einstellungen angezeigt, damit man nicht raten muss. */
+// Was bei einem fehlgeschlagenen Versuch zaehlt; steht in den Einstellungen
 QString LgTv::diagnostics() const
 {
     QStringList out;
-    out << QStringLiteral("SSL im Qt-Build: ")
-           + (QSslSocket::supportsSsl() ? QStringLiteral("ja") : QStringLiteral("NEIN"));
-    out << QStringLiteral("SSL-Bibliothek: ") + QSslSocket::sslLibraryVersionString();
-    out << QStringLiteral("Ziel: wss://") + m_host + QStringLiteral(":3001");
+    out << tr("SSL in the Qt build: %1").arg(QSslSocket::supportsSsl() ? tr("yes") : tr("NO"));
+    out << tr("SSL library: %1").arg(QSslSocket::sslLibraryVersionString());
+    out << tr("Target: wss://%1:3001").arg(m_host);
     if (!m_sslNote.isEmpty())
-        out << QStringLiteral("Zertifikat: ") + m_sslNote;
+        out << tr("Certificate: %1").arg(m_sslNote);
     if (!m_lastError.isEmpty())
-        out << QStringLiteral("Letzte abgelehnte Abfrage: ") + m_lastError;
+        out << tr("Last rejected request: %1").arg(m_lastError);
     return out.join(QStringLiteral("\n"));
 }
 
@@ -184,6 +197,39 @@ void LgTv::setClientKey(const QString &k)
     emit clientKeyChanged();
 }
 
+void LgTv::setCertFingerprint(const QString &f)
+{
+    if (f == m_certFingerprint)
+        return;
+    m_certFingerprint = f;
+    m_certBlocked = false;
+    emit certFingerprintChanged();
+}
+
+/* Erste Verbindung merkt den Fingerabdruck, spaetere muessen ihn zeigen.
+   Welche Fehler das Zertifikat sonst hat, ist gleichgueltig - massgeblich
+   ist, dass es dasselbe Geraet ist. */
+bool LgTv::acceptCert(const QList<QSslError> &errors)
+{
+    QByteArray fp;
+    for (const QSslError &e : errors) {
+        if (e.certificate().isNull())
+            continue;
+        fp = e.certificate().digest(QCryptographicHash::Sha256).toHex();
+        break;
+    }
+    if (fp.isEmpty())
+        return false;
+
+    const QString shown = QString::fromLatin1(fp);
+    if (m_certFingerprint.isEmpty()) {
+        m_certFingerprint = shown;
+        emit certFingerprintChanged();
+        return true;
+    }
+    return m_certFingerprint == shown;
+}
+
 void LgTv::setStatus(const QString &s)
 {
     if (s == m_status)
@@ -199,26 +245,33 @@ void LgTv::connectTv()
     disconnectTv();
     // ... dieser Versuch ist gewollt, disconnectTv hat das Gegenteil vermerkt
     m_userClosed = false;
+    m_certBlocked = false;
     m_retryDelay = 2000;
-    setStatus(QStringLiteral("verbinde ..."));
+    setStatus(tr("connecting ..."));
     openMain();
 }
 
-/* Einziger Weg, den Hauptsocket zu oeffnen. Der Zustandstest verhindert, dass
-   ein Wiederholungsversuch eine bereits laufende Verbindung zerschiesst. */
+// Einziger Weg zum Hauptsocket; der Zustandstest schuetzt eine laufende
+// Verbindung vor dem Wiederholer
 void LgTv::openMain()
 {
-    if (m_main.state() != QAbstractSocket::UnconnectedState)
+    if (m_main.state() != QAbstractSocket::UnconnectedState || m_certBlocked)
         return;
+    if (m_host.isEmpty()) {
+        setStatus(tr("no device"));
+        return;
+    }
     qWarning() << "LgTv: verbinde mit wss://" << m_host << ":3001";
     // Feste Wahl: wss auf 3001. Aktuelle Firmware bedient das offene
     // Port 3000 nicht mehr.
     m_main.open(QUrl(QStringLiteral("wss://%1:3001").arg(m_host)));
+    m_connect->start();
 }
 
 void LgTv::disconnectTv()
 {
     m_userClosed = true;
+    m_connect->stop();
     m_retry->stop();
     stopBeat();
     m_pointer.close();
@@ -229,11 +282,12 @@ void LgTv::disconnectTv()
     m_textInputReady = false;
     emit textInputChanged();
     emit stateChanged();
-    setStatus(QStringLiteral("getrennt"));
+    setStatus(tr("disconnected"));
 }
 
 void LgTv::onMainConnected()
 {
+    m_connect->stop();
     qWarning() << "LgTv: Verbindung offen, melde an";
     m_linkUp = true;
     m_alive = true;
@@ -244,6 +298,7 @@ void LgTv::onMainConnected()
 
 void LgTv::onMainDisconnected()
 {
+    m_connect->stop();
     m_linkUp = m_registered = m_pointerReady = false;
     m_pending.clear();
     /* Die Abos galten fuer die alte Verbindung; nach der Neuanmeldung
@@ -255,7 +310,7 @@ void LgTv::onMainDisconnected()
     if (m_userClosed)
         return;
     qWarning() << "LgTv: Verbindung weg";
-    setStatus(QStringLiteral("Verbindung verloren"));
+    setStatus(tr("connection lost"));
     scheduleRetry();
 }
 
@@ -273,9 +328,8 @@ void LgTv::stopBeat()
     m_watch->stop();
 }
 
-/* Fragt etwas Harmloses ab, dessen Antwort niemand auswertet. Das Ping-Rahmen
-   allein waere sparsamer, aber nicht jede Firmware antwortet darauf - die
-   SSAP-Anfrage tut es nachweislich. */
+/* Harmlose Abfrage; der Ping allein waere sparsamer, aber nicht jede
+   Firmware beantwortet ihn. */
 void LgTv::probe()
 {
     if (!m_registered)
@@ -286,13 +340,12 @@ void LgTv::probe()
     m_watch->start();
 }
 
-/* Verbindung gilt als tot, obwohl der Socket noch offen aussieht. abort()
-   statt close(): auf einen Abschiedsgruss von der Gegenseite zu warten hat
-   hier keinen Zweck mehr. */
+// Tot trotz offenem Socket: abort() statt close(), auf einen Abschiedsgruss
+// zu warten hat keinen Zweck
 void LgTv::handleDrop()
 {
     qWarning() << "LgTv: kein Lebenszeichen - Verbindung gilt als tot";
-    setStatus(QStringLiteral("keine Antwort vom Fernseher"));
+    setStatus(tr("no answer from the TV"));
     m_pointer.abort();
     m_main.abort();
     // Falls abort() kein disconnected ausgeloest hat, den Weg selbst gehen
@@ -302,13 +355,12 @@ void LgTv::handleDrop()
 
 void LgTv::scheduleRetry()
 {
-    if (m_userClosed || m_retry->isActive())
+    if (m_userClosed || m_certBlocked || m_host.isEmpty() || m_retry->isActive())
         return;
     // Ein neuer Versuch laeuft bereits - etwa der aus connectTv()
     if (m_main.state() != QAbstractSocket::UnconnectedState)
         return;
-    /* Im Hintergrund nicht weiterfunken: das kostet Strom, und sobald die App
-       wieder da ist, klopft onAppStateChanged sofort an. */
+    // Im Hintergrund ruhen; onAppStateChanged klopft beim Zurueckholen an
     if (qGuiApp->applicationState() != Qt::ApplicationActive)
         return;
     m_retry->start(m_retryDelay);
@@ -320,7 +372,7 @@ void LgTv::ensureConnected()
         return;
     if (m_main.state() == QAbstractSocket::UnconnectedState) {
         m_retryDelay = 2000;
-        setStatus(QStringLiteral("verbinde ..."));
+        setStatus(tr("connecting ..."));
         openMain();
         return;
     }
@@ -366,8 +418,8 @@ void LgTv::sendRegister()
     else
         emit pairingPrompt();
 
-    setStatus(m_clientKey.isEmpty() ? QStringLiteral("warte auf Bestätigung am Fernseher")
-                                    : QStringLiteral("melde an ..."));
+    setStatus(m_clientKey.isEmpty() ? tr("waiting for confirmation on the TV")
+                                    : tr("signing in ..."));
 
     QJsonObject msg;
     msg.insert(QStringLiteral("id"), QStringLiteral("register_0"));
@@ -382,6 +434,7 @@ void LgTv::onMainMessage(const QString &text)
 {
     // Jede Antwort beweist, dass die Verbindung noch traegt
     m_alive = true;
+    m_watch->stop();
 
     const QJsonObject msg = QJsonDocument::fromJson(text.toUtf8()).object();
     const QString type = msg.value(QStringLiteral("type")).toString();
@@ -391,7 +444,7 @@ void LgTv::onMainMessage(const QString &text)
         qWarning() << "LgTv: angemeldet";
         m_registered = true;
         emit stateChanged();
-        setStatus(QStringLiteral("verbunden"));
+        setStatus(tr("connected"));
 
         const QString key = payload.value(QStringLiteral("client-key")).toString();
         if (!key.isEmpty() && key != m_clientKey) {
@@ -404,16 +457,12 @@ void LgTv::onMainMessage(const QString &text)
         // wenn jemand die Originalfernbedienung benutzt.
         subscribe(QStringLiteral("ssap://audio/getVolume"), WantVolume);
         subscribe(QStringLiteral("ssap://tv/getCurrentChannel"), WantChannel);
-        /* Muss bestehen bleiben, solange Text geschickt werden soll: ohne
-           angemeldete Fernbedienungstastatur ordnet der Fernseher den Text
-           keinem Feld zu und verwirft ihn - am Geraet nachgewiesen. */
+        /* Ohne angemeldete Fernbedienungstastatur ordnet der TV Text keinem
+           Feld zu und verwirft ihn - am Geraet nachgewiesen. */
         subscribe(QStringLiteral("ssap://com.webos.service.ime/registerRemoteKeyboard"),
                   WantKeyboard);
-        /* Fuer das Textfeld: ist YouTube auf dem Bildschirm, wird gesucht,
-           sonst der Text in das Feld am Fernseher geschrieben.
-           getForegroundAppInfo waere naheliegender, der Fernseher beantwortet
-           es unserem Schluessel aber mit "401 insufficient permissions".
-           getAppState ist erlaubt und meldet running und visible. */
+        /* getForegroundAppInfo waere naheliegender, wird unserem Schluessel
+           aber mit "401 insufficient permissions" beantwortet. */
         subscribe(QStringLiteral("ssap://system.launcher/getAppState"), WantAppState,
                   ytPayload());
         refreshVolume();
@@ -425,17 +474,15 @@ void LgTv::onMainMessage(const QString &text)
     if (type == QLatin1String("error")) {
         const QString err = msg.value(QStringLiteral("error")).toString();
 
-        /* Sobald die Anmeldung steht, betrifft ein Fehler nur die eine
-           Abfrage - etwa "401 insufficient permissions" fuer die Firmware.
-           Der frueher hier stehende Rundumschlag hat in dem Fall den
-           Kopplungsschluessel geloescht und die Verbindung gekappt. */
+        /* Nach der Anmeldung betrifft ein Fehler nur die eine Abfrage -
+           nicht die Verbindung und nicht den Schluessel. */
         if (m_registered) {
             m_lastError = err;
             emit statusTextChanged();
             return;
         }
 
-        setStatus(QStringLiteral("Fehler: ") + err);
+        setStatus(tr("Error: %1").arg(err));
         emit failed(err);
         // Nur eine abgelehnte Anmeldung entwertet den Schluessel
         if (err.contains(QLatin1String("401"))) {
@@ -507,10 +554,8 @@ void LgTv::handlePayload(Want want, const QJsonObject &payload)
         else if (src.contains(QStringLiteral("muteStatus")))
             m_muted = src.value(QStringLiteral("muteStatus")).toBool();
 
-        /* Laeuft der Ton ueber die TV-Lautsprecher, regelt der Fernseher
-           seinen eigenen Verstaerker - dann ist der Wert echt. Haengt er per
-           ARC an einem fremden Geraet, ist es nur ein Zaehler: das Geraet
-           meldet seinen Pegel nie zurueck, am CEC-Bus nachgemessen. */
+        /* Nur an den TV-Lautsprechern ist der Wert echt. Ueber ARC ist es ein
+           Zaehler - das Geraet meldet seinen Pegel nie zurueck (CEC gemessen). */
         const QString out = src.value(QStringLiteral("soundOutput")).toString();
         if (!out.isEmpty() && out != m_soundOutput)
             m_soundOutput = out;
@@ -531,8 +576,14 @@ void LgTv::handlePayload(Want want, const QJsonObject &payload)
             QVariantMap m;
             m.insert(QStringLiteral("ident"), o.value(QStringLiteral("id")).toString());
             m.insert(QStringLiteral("label"), title);
+            m.insert(QStringLiteral("icon"), o.value(QStringLiteral("icon")).toString());
             out.append(m);
         }
+        // Der Fernseher liefert ungeordnet - Live TV stand auf Platz 31
+        std::sort(out.begin(), out.end(), [](const QVariant &a, const QVariant &b) {
+            return a.toMap().value(QStringLiteral("label")).toString().localeAwareCompare(
+                       b.toMap().value(QStringLiteral("label")).toString()) < 0;
+        });
         emit appsReceived(out);
         break;
     }
@@ -546,24 +597,22 @@ void LgTv::handlePayload(Want want, const QJsonObject &payload)
             m.insert(QStringLiteral("ident"), id);
             const QString label = o.value(QStringLiteral("label")).toString();
             m.insert(QStringLiteral("label"), label.isEmpty() ? id : label);
+            m.insert(QStringLiteral("icon"), o.value(QStringLiteral("icon")).toString());
             out.append(m);
         }
         emit inputsReceived(out);
         break;
     }
     case WantTextResult: {
-        /* Antwort auf insertText festhalten - ohne das sendet die App blind
-           und wir sehen nicht, ob der Fernseher den Text angenommen hat. */
+        // Ohne diese Antwort sendet die App blind
         const bool ok = payload.value(QStringLiteral("returnValue")).toBool();
-        m_lastError = ok ? QStringLiteral("insertText: angenommen")
-                         : QStringLiteral("insertText abgelehnt: ")
-                           + payload.value(QStringLiteral("errorText")).toString();
+        m_lastError = ok ? tr("insertText: accepted")
+                         : tr("insertText rejected: %1").arg(payload.value(QStringLiteral("errorText")).toString());
         emit statusTextChanged();
         break;
     }
     case WantKeyboard: {
-        /* currentWidget beschreibt das Feld, das gerade Eingaben annimmt.
-           focus=false heisst: kein Feld offen, Text waere verloren. */
+        // focus=false heisst: kein Feld offen, Text waere verloren
         const QJsonObject w = payload.value(QStringLiteral("currentWidget")).toObject();
         const bool ready = w.value(QStringLiteral("focus")).toBool();
         const QString type = w.value(QStringLiteral("contentType")).toString();
@@ -585,10 +634,8 @@ void LgTv::handlePayload(Want want, const QJsonObject &payload)
         }
         m_ytRunning = laeuft;
 
-        /* Wartet eine Suche, entscheidet sich hier der Weg: Steht die App
-           schon auf dem Bildschirm, nimmt sie den Begriff im Lauf entgegen.
-           Liegt sie im Hintergrund, wuerde ein Start sie nur benachrichtigen,
-           ohne sie nach vorn zu holen - dann erst schliessen. */
+        /* Sichtbar: der Begriff geht im Lauf hinein. Im Hintergrund wuerde
+           ein Start nur benachrichtigen - deshalb erst schliessen. */
         if (!m_pendingSearch.isNull()) {
             const QString begriff = m_pendingSearch;
             m_pendingSearch = QString();
@@ -606,6 +653,14 @@ void LgTv::handlePayload(Want want, const QJsonObject &payload)
         }
         break;
     }
+    case WantCapture: {
+        const QString uri = payload.value(QStringLiteral("imageUri")).toString();
+        if (uri.isEmpty())
+            setStatus(tr("no screenshot from the TV"));
+        else
+            emit captureReady(uri);
+        break;
+    }
     case WantChannel: {
         // Nummer und Name zusammensetzen, soweit vorhanden
         const QString nr = payload.value(QStringLiteral("channelNumber")).toString();
@@ -621,9 +676,9 @@ void LgTv::handlePayload(Want want, const QJsonObject &payload)
     }
     case WantSystem: {
         QVariantMap m;
-        m.insert(QStringLiteral("Modell"), payload.value(QStringLiteral("modelName")).toString());
-        m.insert(QStringLiteral("Seriennummer"), payload.value(QStringLiteral("serialNumber")).toString());
-        m.insert(QStringLiteral("Empfangsteil"), payload.value(QStringLiteral("receiverType")).toString());
+        m.insert(tr("Model"), payload.value(QStringLiteral("modelName")).toString());
+        m.insert(tr("Serial number"), payload.value(QStringLiteral("serialNumber")).toString());
+        m.insert(tr("Tuner"), payload.value(QStringLiteral("receiverType")).toString());
         emit systemInfoReceived(m);
         break;
     }
@@ -631,8 +686,8 @@ void LgTv::handlePayload(Want want, const QJsonObject &payload)
         QVariantMap m;
         const QStringList keys = { QStringLiteral("wiredInfo"), QStringLiteral("wifiInfo"),
                                    QStringLiteral("p2pInfo") };
-        const QStringList names = { QStringLiteral("MAC Kabel"), QStringLiteral("MAC WLAN"),
-                                    QStringLiteral("MAC Direktverbindung") };
+        const QStringList names = { tr("MAC wired"), tr("MAC Wi-Fi"),
+                                    tr("MAC direct link") };
         for (int i = 0; i < keys.size(); ++i) {
             const QJsonObject o = payload.value(keys.at(i)).toObject();
             const QString mac = o.value(QStringLiteral("macAddress")).toString();
@@ -640,7 +695,7 @@ void LgTv::handlePayload(Want want, const QJsonObject &payload)
                 m.insert(names.at(i), mac.toLower());
             const QString ip = o.value(QStringLiteral("ipAddress")).toString();
             if (!ip.isEmpty())
-                m.insert(names.at(i) + QStringLiteral(" – IP"), ip);
+                m.insert(names.at(i) + tr(" - IP"), ip);
         }
         emit networkInfoReceived(m);
         break;
@@ -649,28 +704,25 @@ void LgTv::handlePayload(Want want, const QJsonObject &payload)
         const QJsonObject v = payload.value(QStringLiteral("volumeStatus")).toObject();
         QVariantMap m;
         const QString out = v.value(QStringLiteral("soundOutput")).toString();
-        m.insert(QStringLiteral("Tonausgabe"), prettySoundOutput(out));
-        m.insert(QStringLiteral("Lautstärke"),
-                 QStringLiteral("%1 von %2").arg(v.value(QStringLiteral("volume")).toInt())
+        m.insert(tr("Sound output"), prettySoundOutput(out));
+        m.insert(tr("Volume"),
+                 tr("%1 of %2").arg(v.value(QStringLiteral("volume")).toInt())
                      .arg(v.value(QStringLiteral("maxVolume")).toInt()));
-        m.insert(QStringLiteral("Stumm"),
-                 v.value(QStringLiteral("muteStatus")).toBool() ? QStringLiteral("ja")
-                                                                : QStringLiteral("nein"));
-        m.insert(QStringLiteral("Externe Steuerung"),
-                 v.value(QStringLiteral("externalDeviceControl")).toBool() ? QStringLiteral("ja")
-                                                                          : QStringLiteral("nein"));
-        m.insert(QStringLiteral("Lautstärke regelbar"),
-                 v.value(QStringLiteral("adjustVolume")).toBool() ? QStringLiteral("ja")
-                                                                  : QStringLiteral("nein"));
+        m.insert(tr("Muted"),
+                 v.value(QStringLiteral("muteStatus")).toBool() ? tr("yes") : tr("no"));
+        m.insert(tr("External control"),
+                 v.value(QStringLiteral("externalDeviceControl")).toBool() ? tr("yes") : tr("no"));
+        m.insert(tr("Volume adjustable"),
+                 v.value(QStringLiteral("adjustVolume")).toBool() ? tr("yes") : tr("no"));
         emit audioStatusReceived(m);
         break;
     }
     case WantSoftware: {
         QVariantMap m;
-        m.insert(QStringLiteral("Firmware"),
+        m.insert(tr("Firmware"),
                  payload.value(QStringLiteral("major_ver")).toString()
                  + QStringLiteral(".") + payload.value(QStringLiteral("minor_ver")).toString());
-        m.insert(QStringLiteral("Produkt"), payload.value(QStringLiteral("product_name")).toString());
+        m.insert(tr("Product"), payload.value(QStringLiteral("product_name")).toString());
         m.insert(QStringLiteral("webOS"), payload.value(QStringLiteral("webos_release")).toString());
         emit softwareInfoReceived(m);
         break;
@@ -693,8 +745,29 @@ void LgTv::move(int dx, int dy)
 {
     if (!m_pointerReady)
         return;
+    m_moveX += dx;
+    m_moveY += dy;
+
+    if (!m_moveTimer) {
+        m_moveTimer = new QTimer(this);
+        m_moveTimer->setInterval(40);
+        connect(m_moveTimer, &QTimer::timeout, this, &LgTv::flushMove);
+    }
+    if (!m_moveTimer->isActive()) {
+        flushMove();            // erster Schritt sofort
+        m_moveTimer->start();
+    }
+}
+
+void LgTv::flushMove()
+{
+    if (m_moveX == 0 && m_moveY == 0) {
+        m_moveTimer->stop();
+        return;
+    }
     m_pointer.sendTextMessage(
-        QStringLiteral("type:move\ndx:%1\ndy:%2\ndown:0\n\n").arg(dx).arg(dy));
+        QStringLiteral("type:move\ndx:%1\ndy:%2\ndown:0\n\n").arg(m_moveX).arg(m_moveY));
+    m_moveX = m_moveY = 0;
 }
 
 void LgTv::click()
@@ -743,14 +816,8 @@ void LgTv::sendEnter()
 
 // ---------- Befehle ----------
 
-/*
- * Lautstaerke im Takt abgeben.
- *
- * Am Geraet beobachtet: Bei schnellem Tippen oder gehaltener Taste laeuft die
- * Anzeige der Anlage der des Fernsehers hinterher - der Fernseher zaehlt jeden
- * Befehl mit und gibt ihn per CEC weiter, die Anlage schafft aber nicht jeden.
- * Deshalb werden die Schritte gesammelt und im Takt abgegeben.
- */
+/* Schritte sammeln und im Takt abgeben: der TV zaehlt jeden Befehl mit und
+   reicht ihn per CEC weiter, die Anlage schafft aber nicht jeden. */
 void LgTv::stepVolume(int delta)
 {
     m_volSteps += delta;
@@ -794,12 +861,8 @@ void LgTv::setMute(bool on)
     emit volumeChanged();
 }
 
-/*
- * Am Geraet gemessen: setVolume verstellt ausschliesslich den Zaehler des
- * Fernsehers. Waehrend des Aufrufs geht ueber CEC kein einziger
- * Lautstaerkebefehl hinaus - das Tongeraet bleibt, wo es ist. Genau deshalb
- * taugt der Aufruf zum Abgleich der Anzeige.
- */
+/* Gemessen: setVolume verstellt nur den Zaehler des TV, ueber CEC geht dabei
+   nichts hinaus. Genau deshalb taugt es zum Abgleich der Anzeige. */
 void LgTv::setVolume(int v)
 {
     if (v < 0) v = 0;
@@ -829,8 +892,7 @@ void LgTv::refreshChannel()
     request(QStringLiteral("ssap://tv/getCurrentChannel"), QJsonObject(), WantChannel);
 }
 
-/* Der Fernseher braucht einen Moment, bis der neue Kanal anliegt - sofortiges
-   Nachfragen liefert sonst noch den alten. */
+// Der TV braucht einen Moment, sonst kommt noch der alte Kanal
 void LgTv::channelUp()
 {
     request(QStringLiteral("ssap://tv/channelUp"), QJsonObject(), WantNothing);
@@ -856,8 +918,16 @@ void LgTv::turnOff()
     request(QStringLiteral("ssap://system/turnOff"), QJsonObject(), WantNothing);
 }
 
+/* YouTube meldet handlesRelaunch: liegt die App im Hintergrund, holt
+   ein Startbefehl sie nicht nach vorn. Deshalb denselben Umweg wie die Suche
+   gehen - leerer Begriff heisst "nur oeffnen". */
 void LgTv::launchApp(const QString &id)
 {
+    if (id == QLatin1String(YT_APP)) {
+        m_pendingSearch = QStringLiteral("");
+        refreshYouTubeState();
+        return;
+    }
     QJsonObject p;
     p.insert(QStringLiteral("id"), id);
     request(QStringLiteral("ssap://system.launcher/launch"), p, WantNothing);
@@ -887,7 +957,7 @@ void LgTv::searchYouTube(const QString &text)
     if (begriff.isEmpty())
         return;
     m_pendingSearch = begriff;
-    note(QStringLiteral("YouTube: %1").arg(begriff));
+    note(tr("YouTube: %1").arg(begriff));
     refreshYouTubeState();
 }
 
@@ -903,16 +973,17 @@ void LgTv::switchInput(const QString &id)
     request(QStringLiteral("ssap://tv/switchInput"), p, WantNothing);
 }
 
-/*
- * Der Aufruf steckt nicht in system.launcher, sondern in einem eigenen
- * Dienst. Alle naheliegenden Wege fuehren daran vorbei: com.webos.app.
- * homeconnect oeffnet den Startseiten-Hub als ganze Seite, und ueber den
- * Tastenkanal gibt es keinen Namen dafuer - 44 geprueft, keiner wirkt.
- */
+/* Eigener Dienst, nicht system.launcher: homeconnect oeffnet den ganzen Hub,
+   und ueber den Tastenkanal gibt es keinen Namen dafuer (44 geprueft). */
 void LgTv::showInputPicker()
 {
     request(QStringLiteral("ssap://com.webos.surfacemanager/showInputPicker"),
             QJsonObject(), WantNothing);
+}
+
+void LgTv::captureScreen()
+{
+    request(QStringLiteral("ssap://tv/executeOneShot"), QJsonObject(), WantCapture);
 }
 
 void LgTv::requestApps()
@@ -946,8 +1017,7 @@ void LgTv::requestAudioStatus()
 
 void LgTv::requestSoftwareInfo()
 {
-    // Wird je nach erteilten Berechtigungen mit 401 abgelehnt; die Seite
-    // zeigt dann schlicht keinen Firmware-Eintrag.
+    // Je nach Berechtigung 401; dann fehlt der Firmware-Eintrag
     request(QStringLiteral("ssap://com.webos.service.update/getCurrentSWInformation"),
             QJsonObject(), WantSoftware);
 }

@@ -8,8 +8,7 @@ Item {
     property var tv
     property var window
 
-    /* Kurzanzeige zwischen den Kanaltasten: nach einer Aenderung zwei
-       Sekunden lang der neue Wert. */
+    // Kurzanzeige zwischen den Kanaltasten, zwei Sekunden lang
     QtObject {
         id: flash
         property string text: ""
@@ -24,10 +23,9 @@ Item {
         target: tv
         onVolumeChanged: {
             if (!tv.registered) return
-            /* Bei externem Ton ist die Zahl nur der TV-Zaehler und hat mit
-               dem Pegel am Geraet nichts zu tun - dann lieber sagen, wo der
-               Ton herauskommt, als eine falsche Zahl zeigen. */
-            flash.text = tv.muted ? "stumm"
+            // Bei externem Ton ist die Zahl nur der TV-Zaehler - dann lieber
+            // sagen, wo der Ton herauskommt
+            flash.text = tv.muted ? qsTr("muted")
                        : tv.volumeReliable ? String(tv.volume) : "ARC"
             flashTimer.restart()
         }
@@ -66,9 +64,8 @@ Item {
 
                     property bool longPressed: false
 
-                    /* Der Zustand steckt in der Farbe des Zeichens, nicht in
-                       einem Text: gruen verbunden, rot getrennt, orange
-                       blinkend waehrend Verbindungsaufbau oder Suche. */
+                    // Zustand in der Farbe: gruen verbunden, rot getrennt,
+                    // orange blinkend waehrend des Aufbaus
                     property bool searching: !panel.tv.registered
                                              && (panel.tv.linkUp || reconnect.running)
                     property color stateColor: panel.tv.registered ? "#4caf50"
@@ -128,7 +125,7 @@ Item {
                         onTriggered: {
                             power.longPressed = true
                             panel.tv.turnOff()
-                            panel.tv.note("ausgeschaltet")
+                            panel.tv.note(qsTr("switched off"))
                         }
                     }
 
@@ -144,8 +141,8 @@ Item {
                             if (!power.longPressed) {
                                 // Kurz tippen weckt den Fernseher
                                 var ok = Wol.wake(panel.window.mac, panel.window.host)
-                                panel.tv.note(ok ? "Einschaltsignal gesendet"
-                                                 : "MAC-Adresse ungültig")
+                                panel.tv.note(ok ? qsTr("wake-up signal sent")
+                                                 : qsTr("invalid MAC address"))
                                 if (ok) reconnect.start()
                             }
                         }
@@ -186,11 +183,11 @@ Item {
                 enabled: panel.tv.pointerReady
                 opacity: panel.tv.pointerReady ? 1.0 : 0.3
 
-                IconKey { icon: "icon-m-back";  label: "Zurück"
+                IconKey { icon: "icon-m-back";  label: qsTr("Back")
                           onPressed: panel.tv.button("BACK") }
                 IconKey { icon: "icon-m-home";  label: "Home"
                           onPressed: panel.tv.button("HOME") }
-                IconKey { icon: "icon-m-about"; label: "Info"
+                IconKey { icon: "icon-m-about"; label: qsTr("Info")
                           onPressed: panel.tv.button("INFO") }
             }
 
@@ -204,21 +201,17 @@ Item {
 
                 IconKey { icon: "icon-m-events"; label: "Guide"
                           onPressed: panel.tv.button("GUIDE") }
-                /* TV_VIDEO bildet die Eingangstaste der Originalfernbedienung
-                   genau nach: erster Druck blendet die Leiste ein, jeder
-                   weitere schaltet zum naechsten Geraet weiter. Der Name
-                   gehoert zu Keycode 241, in den Linux-Headern KEY_VIDEO_NEXT,
-                   "drive next video source". Langer Druck oeffnet stattdessen
-                   die Liste in der App. */
+                /* TV_VIDEO bildet die Eingangstaste des Originals nach:
+                   einblenden, dann weiterschalten (Keycode 241,
+                   KEY_VIDEO_NEXT). Langer Druck oeffnet die Liste. */
                 IconKey {
-                    icon: "icon-m-device"; label: "Input"
+                    icon: "icon-m-device"; label: qsTr("Input")
                     onPressed: panel.tv.button("TV_VIDEO")
                     onPressAndHold: pageStack.push(Qt.resolvedUrl("AppsPage.qml"),
                                                    { tv: panel.tv })
                 }
-                // Es gibt keine startbare Einstellungs-App; die Zahnradtaste
-                // der Fernbedienung heisst im Protokoll MENU
-                IconKey { icon: "icon-m-setting"; label: "Einstellungen"
+                // Keine startbare Einstellungs-App; das Zahnrad heisst MENU
+                IconKey { icon: "icon-m-setting"; label: qsTr("Settings")
                           onPressed: panel.tv.button("MENU") }
             }
 
@@ -234,7 +227,7 @@ Item {
                     spacing: Theme.paddingLarge
                     Label {
                         anchors.horizontalCenter: parent.horizontalCenter
-                        text: "Ton"
+                        text: qsTr("Sound")
                         font.pixelSize: Theme.fontSizeExtraSmall
                         color: Theme.secondaryColor
                     }
@@ -251,21 +244,16 @@ Item {
                     spacing: Theme.paddingLarge
                     Label {
                         anchors.horizontalCenter: parent.horizontalCenter
-                        text: "Kanal"
+                        text: qsTr("Channel")
                         font.pixelSize: Theme.fontSizeExtraSmall
                         color: Theme.secondaryColor
                     }
                     RemoteKey { text: "▲"; repeatable: true; onActivated: panel.tv.channelUp() }
 
-                    /* Zeigt nach einer Aenderung zwei Sekunden lang an, was
-                       sich geaendert hat - Lautstaerke oder Kanal. Sonst leer,
-                       damit die Flaeche ruhig bleibt. */
-                    /* Breiter als eine Taste, damit auch ein Sendername
-                       hineinpasst. Nach links und rechts ueber die Spalte
-                       hinaus, aber mittig darueber. */
+                    /* Breite wie eine Taste, damit die Spalte sitzt; die
+                       Beschriftung darf ueberstehen, ein Sendername braucht
+                       den Platz. */
                     Item {
-                        // Breite wie eine Taste, damit die Spalte ihre alte
-                        // Position behaelt; die Beschriftung darf ueberstehen
                         width: Theme.itemSizeLarge
                         height: Theme.itemSizeLarge
                         clip: false
