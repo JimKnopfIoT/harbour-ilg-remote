@@ -13,13 +13,15 @@ stored and switched between.
 
 |  |  |  |
 |---|---|---|
-| ![Remote](docs/screenshots/remote.png) | ![Number pad](docs/screenshots/numbers.png) | ![Pointer](docs/screenshots/pointer.png) |
+| ![Remote](docs/screenshots/1_remote.png) | ![Number pad](docs/screenshots/2_numbers.png) | ![Pointer and keyboard](docs/screenshots/3_pointer.png) |
 
-*(The three carousel pages — remote, number pad, pointer. On the number pad,
-the six quick-launch tiles: five assignable ones — brand logos replaced by
-neutral placeholders here — and the fixed shutter tile.)*
+*(The three carousel pages — remote, number pad, and the pointer page with the
+keyboard: the surface moves the cursor, the text row sends text to a field on
+the TV or searches YouTube. On the number pad, the six quick-launch tiles: five
+assignable ones — brand logos replaced by neutral placeholders here — and the
+fixed shutter tile.)*
 
-![Screenshot taken from the TV](docs/screenshots/tv-capture.jpg)
+![Screenshot taken from the TV](docs/screenshots/4_tv-capture.jpg)
 
 *(What the shutter tile brings back: the TV's current picture at 960×540,
 stored in the gallery. Example content.)*
