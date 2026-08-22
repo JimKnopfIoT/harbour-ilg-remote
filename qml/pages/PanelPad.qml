@@ -216,6 +216,13 @@ Item {
                         waiting = false
                         return
                     }
+                    // Meldet der TV kein Feld, waere ENTER ein blinder
+                    // Tastendruck - er landet auf dem hervorgehobenen Element
+                    if (panel.tv.textInputType.length === 0) {
+                        waiting = false
+                        panel.tv.note(qsTr("no text field open on the TV"))
+                        return
+                    }
                     // ENTER oeffnet die Tastatur am Cursor; danach geht der
                     // Text von selbst raus
                     waiting = true

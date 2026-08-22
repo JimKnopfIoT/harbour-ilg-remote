@@ -467,6 +467,8 @@ void LgTv::onMainMessage(const QString &text)
                   ytPayload());
         refreshVolume();
         refreshChannel();
+        // liefert die MAC zum Aufwecken; die Suche im Netz kann sie nicht
+        requestNetworkInfo();
         startBeat();
         return;
     }
@@ -688,16 +690,34 @@ void LgTv::handlePayload(Want want, const QJsonObject &payload)
                                    QStringLiteral("p2pInfo") };
         const QStringList names = { tr("MAC wired"), tr("MAC Wi-Fi"),
                                     tr("MAC direct link") };
+        // MAC zum Aufwecken: Schnittstelle mit unserer IP, sonst die erste
+        // verbundene. p2p nie - nicht anfunkbar.
+        QString wakeMac;
+        bool byAddress = false;
         for (int i = 0; i < keys.size(); ++i) {
             const QJsonObject o = payload.value(keys.at(i)).toObject();
-            const QString mac = o.value(QStringLiteral("macAddress")).toString();
+            const QString mac = o.value(QStringLiteral("macAddress")).toString().toLower();
             if (!mac.isEmpty())
-                m.insert(names.at(i), mac.toLower());
+                m.insert(names.at(i), mac);
             const QString ip = o.value(QStringLiteral("ipAddress")).toString();
             if (!ip.isEmpty())
                 m.insert(names.at(i) + tr(" - IP"), ip);
+
+            if (mac.isEmpty() || byAddress
+                || keys.at(i) == QLatin1String("p2pInfo"))
+                continue;
+            if (!ip.isEmpty() && ip == m_host) {
+                wakeMac = mac;
+                byAddress = true;
+            } else if (wakeMac.isEmpty()
+                       && o.value(QStringLiteral("state")).toString()
+                              .compare(QLatin1String("connected"), Qt::CaseInsensitive) == 0) {
+                wakeMac = mac;
+            }
         }
         emit networkInfoReceived(m);
+        if (!wakeMac.isEmpty())
+            emit macDiscovered(wakeMac);
         break;
     }
     case WantAudio: {

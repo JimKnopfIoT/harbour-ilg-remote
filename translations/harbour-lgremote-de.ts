@@ -475,6 +475,10 @@ Die Tasten laufen über einen zweiten Kanal, dessen Adresse der Fernseher erst a
         <source>text to the TV</source>
         <translation>Text an den Fernseher</translation>
     </message>
+    <message>
+        <source>no text field open on the TV</source>
+        <translation>kein Textfeld am Fernseher offen</translation>
+    </message>
 </context>
 <context>
     <name>PortScan</name>

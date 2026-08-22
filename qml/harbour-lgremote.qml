@@ -137,6 +137,16 @@ ApplicationWindow {
         saveDevices()
     }
 
+    // MAC kommt vom verbundenen TV; von Hand Eingetragenes bleibt stehen
+    function storeMac(m) {
+        if (!device || !m || m.length === 0) return
+        if (device.mac && device.mac.length > 0) return
+        var list = devices.slice()
+        list[currentIndex].mac = m
+        devices = list
+        saveDevices()
+    }
+
     function addDevice(name, host, mac) {
         var list = devices.slice()
         list.push({ "name": name, "host": host, "mac": mac, "key": "", "cert": "" })
@@ -168,6 +178,7 @@ ApplicationWindow {
     LgTv {
         id: tvConn
         onClientKeyChanged: app.storeKey(clientKey)
+        onMacDiscovered: app.storeMac(mac)
         // Der Symbolabruf braucht denselben Fingerabdruck
         onCertFingerprintChanged: {
             app.storeCert(certFingerprint)

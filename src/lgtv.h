@@ -155,6 +155,8 @@ signals:
     void inputsReceived(const QVariantList &inputs);
     void systemInfoReceived(const QVariantMap &info);
     void networkInfoReceived(const QVariantMap &info);
+    // MAC der aktiven Schnittstelle; nur der verbundene TV nennt sie
+    void macDiscovered(const QString &mac);
     void audioStatusReceived(const QVariantMap &info);
     void softwareInfoReceived(const QVariantMap &info);
     void captureReady(const QString &url);
