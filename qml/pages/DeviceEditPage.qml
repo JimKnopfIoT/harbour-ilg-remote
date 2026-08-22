@@ -22,13 +22,13 @@ Page {
             width: parent.width
             spacing: Theme.paddingMedium
 
-            PageHeader { title: page.dev ? "Gerät bearbeiten" : "Neues Gerät" }
+            PageHeader { title: page.dev ? qsTr("Edit device") : qsTr("New device") }
 
             TextField {
                 id: nameField
                 width: parent.width
-                label: "Name"
-                placeholderText: "Wohnzimmer"
+                label: qsTr("Name")
+                placeholderText: qsTr("Living room")
                 text: page.dev ? page.dev.name : ""
                 EnterKey.iconSource: "image://theme/icon-m-enter-next"
                 EnterKey.onClicked: hostField.focus = true
@@ -37,7 +37,7 @@ Page {
             TextField {
                 id: hostField
                 width: parent.width
-                label: "Adresse"
+                label: qsTr("Address")
                 placeholderText: "192.168.1.100"
                 text: page.dev ? page.dev.host : ""
                 inputMethodHints: Qt.ImhUrlCharactersOnly | Qt.ImhNoAutoUppercase
@@ -48,7 +48,7 @@ Page {
             TextField {
                 id: macField
                 width: parent.width
-                label: "MAC-Adresse (für Wake-on-LAN)"
+                label: qsTr("MAC address (for Wake-on-LAN)")
                 placeholderText: "AA:BB:CC:DD:EE:FF"
                 text: page.dev ? page.dev.mac : ""
                 inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText
@@ -62,13 +62,12 @@ Page {
                 wrapMode: Text.Wrap
                 font.pixelSize: Theme.fontSizeExtraSmall
                 color: Theme.secondaryColor
-                text: "Die MAC-Adresse steht am Fernseher unter Einstellungen → Allgemein " +
-                      "→ Info zum TV. Ohne sie funktioniert alles außer dem Einschalten."
+                text: qsTr("The MAC address is shown on the TV under Settings → General → About this TV. Without it everything works except powering on.")
             }
 
             Button {
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: page.dev ? "Übernehmen" : "Hinzufügen und wechseln"
+                text: page.dev ? qsTr("Apply") : qsTr("Add and switch")
                 enabled: hostField.text.trim().length > 0
                 onClicked: {
                     var name = nameField.text.trim().length > 0

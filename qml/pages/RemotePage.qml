@@ -1,11 +1,8 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
 
-/*
- * Drei Seiten als Karussell: Fernbedienung, Zahlenblock, Zeigerflaeche.
- * PathView statt ListView, weil nur der einen Ringschluss beherrscht - nach
- * der dritten Seite kommt wieder die erste.
- */
+/* Drei Seiten als Karussell. PathView statt ListView, weil nur der einen
+   Ringschluss beherrscht. */
 Page {
     id: page
 
@@ -32,10 +29,8 @@ Page {
         onCurrentIndexChanged: if (currentIndex === 1 && page.tv.registered)
                                    page.tv.refreshChannel()
 
-        /* Der Abstand zweier Seiten ist Bahnlaenge geteilt durch
-           pathItemCount. Damit genau eine Seite das Bild fuellt, muss die
-           Bahn also Bildbreite mal Seitenzahl lang sein - sonst schaut die
-           Nachbarseite herein. Mittelpunkt der Bahn auf die Bildmitte legen. */
+        /* Seitenabstand = Bahnlaenge / pathItemCount. Fuer genau eine Seite
+           je Bild muss die Bahn Bildbreite mal Seitenzahl lang sein. */
         path: Path {
             startX: carousel.width / 2 - carousel.width * carousel.count / 2
             startY: carousel.height / 2
@@ -70,10 +65,8 @@ Page {
         Repeater {
             model: 3
 
-            /* Reine Anzeige, nicht bedienbar: die Punkte liegen unter dem
-               Textfeld der Zeigerseite, und ein Fehlgriff dorthin wuerde
-               ungewollt die Seite wechseln. Zum Blaettern gibt es den
-               Wischstreifen. */
+            /* Reine Anzeige: die Punkte liegen unter dem Textfeld der
+               Zeigerseite, ein Fehlgriff wuerde die Seite wechseln. */
             Rectangle {
                 width: Theme.paddingSmall
                 height: width

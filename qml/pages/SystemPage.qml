@@ -21,13 +21,14 @@ Page {
 
     function reload() {
         rows.clear()
+        portsHeaderDone = false
         busy.running = true
 
-        addSection("Gerät")
-        addRow("Adresse", panel.tv.host)
+        addSection(qsTr("Device"))
+        addRow(qsTr("Address"), panel.tv.host)
 
         if (!panel.tv.registered) {
-            addRow("Zustand", "nicht verbunden")
+            addRow(qsTr("State"), qsTr("not connected"))
             busy.running = false
             return
         }
@@ -45,15 +46,15 @@ Page {
         onSystemInfoReceived: panel.addMap(info)
         onSoftwareInfoReceived: panel.addMap(info)
         onNetworkInfoReceived: {
-            panel.addSection("Netzwerk")
+            panel.addSection(qsTr("Network"))
             panel.addMap(info)
         }
         onAudioStatusReceived: {
-            panel.addSection("Ton und ARC")
+            panel.addSection(qsTr("Sound and ARC"))
             panel.addMap(info)
         }
         onInputsReceived: {
-            panel.addSection("Eingänge")
+            panel.addSection(qsTr("Inputs"))
             for (var i = 0; i < inputs.length; i++)
                 panel.addRow(inputs[i].label, inputs[i].ident)
         }
@@ -62,8 +63,8 @@ Page {
     Connections {
         target: scanner
         onResult: {
-            if (!portsHeaderDone) { panel.addSection("Offene Ports"); portsHeaderDone = true }
-            if (open) panel.addRow(port + "  " + service, "offen")
+            if (!portsHeaderDone) { panel.addSection(qsTr("Open ports")); portsHeaderDone = true }
+            if (open) panel.addRow(port + "  " + service, qsTr("open"))
         }
         onFinished: busy.running = false
     }
@@ -77,12 +78,12 @@ Page {
         model: rows
         flickableDirection: Flickable.VerticalFlick
 
-        header: PageHeader { title: "Systemdaten" }
+        header: PageHeader { title: qsTr("System data") }
 
         PullDownMenu {
             MenuItem {
-                text: "Neu einlesen"
-                onClicked: { panel.portsHeaderDone = false; panel.reload() }
+                text: qsTr("Reload")
+                onClicked: panel.reload()
             }
         }
 

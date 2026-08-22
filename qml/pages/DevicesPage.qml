@@ -13,6 +13,8 @@ Page {
 
     ListModel { id: foundModel }
 
+    property bool searched: false
+
     Connections {
         target: discovery
         onFound: {
@@ -33,7 +35,7 @@ Page {
         header: Column {
             width: list.width
 
-            PageHeader { title: "Geräte" }
+            PageHeader { title: qsTr("Devices") }
 
             Label {
                 x: Theme.horizontalPageMargin
@@ -41,8 +43,7 @@ Page {
                 wrapMode: Text.Wrap
                 font.pixelSize: Theme.fontSizeExtraSmall
                 color: Theme.secondaryColor
-                text: "Antippen wechselt zum Gerät. Der Kopplungsschlüssel wird je " +
-                      "Gerät gespeichert – ein Wechsel verlangt also keine neue Bestätigung."
+                text: qsTr("Tapping switches to the device. The pairing key is stored per device, so switching needs no new confirmation.")
             }
 
             Item { width: 1; height: Theme.paddingLarge }
@@ -50,12 +51,12 @@ Page {
 
         PullDownMenu {
             MenuItem {
-                text: discovery.running ? "Suche läuft ..." : "Fernseher im Netz suchen"
+                text: discovery.running ? qsTr("Searching ...") : qsTr("Search the network")
                 enabled: !discovery.running
-                onClicked: { foundModel.clear(); discovery.start() }
+                onClicked: { foundModel.clear(); page.searched = true; discovery.start() }
             }
             MenuItem {
-                text: "Gerät von Hand hinzufügen"
+                text: qsTr("Add device manually")
                 onClicked: pageStack.push(Qt.resolvedUrl("DeviceEditPage.qml"),
                                           { window: page.window, index: -1 })
             }
@@ -70,12 +71,12 @@ Page {
 
             menu: ContextMenu {
                 MenuItem {
-                    text: "Bearbeiten"
+                    text: qsTr("Edit")
                     onClicked: pageStack.push(Qt.resolvedUrl("DeviceEditPage.qml"),
                                               { window: page.window, index: index })
                 }
                 MenuItem {
-                    text: "Entfernen"
+                    text: qsTr("Remove")
                     enabled: page.window.devices.length > 1
                     onClicked: page.window.removeDevice(index)
                 }
@@ -94,7 +95,7 @@ Page {
                 }
                 Label {
                     text: item.dev ? (item.dev.host
-                          + (item.dev.key && item.dev.key.length > 0 ? "  ·  gekoppelt" : "")) : ""
+                          + (item.dev.key && item.dev.key.length > 0 ? qsTr("  ·  paired") : "")) : ""
                     font.pixelSize: Theme.fontSizeExtraSmall
                     color: Theme.secondaryColor
                 }
@@ -108,9 +109,19 @@ Page {
 
         footer: Column {
             width: list.width
-            visible: foundModel.count > 0 || discovery.running
+            visible: page.searched || foundModel.count > 0
 
-            SectionHeader { text: "Im Netz gefunden" }
+            SectionHeader { text: qsTr("Found on the network") }
+
+            Label {
+                x: Theme.horizontalPageMargin
+                width: parent.width - 2 * Theme.horizontalPageMargin
+                visible: page.searched && !discovery.running && foundModel.count === 0
+                wrapMode: Text.Wrap
+                font.pixelSize: Theme.fontSizeExtraSmall
+                color: Theme.secondaryColor
+                text: qsTr("Nothing found. A TV in standby does not answer - switch it on and search again, or add it manually.")
+            }
 
             BusyIndicator {
                 anchors.horizontalCenter: parent.horizontalCenter
@@ -132,7 +143,7 @@ Page {
 
                         Label { text: model.name; truncationMode: TruncationMode.Fade }
                         Label {
-                            text: model.host + "  ·  antippen zum Übernehmen"
+                            text: model.host + qsTr("  ·  tap to add")
                             font.pixelSize: Theme.fontSizeExtraSmall
                             color: Theme.secondaryColor
                         }
@@ -152,8 +163,8 @@ Page {
 
         ViewPlaceholder {
             enabled: page.window.devices.length === 0
-            text: "Kein Gerät"
-            hintText: "Über das Menü suchen oder von Hand hinzufügen"
+            text: qsTr("No device")
+            hintText: qsTr("Search from the menu or add one manually")
         }
 
         VerticalScrollDecorator { }

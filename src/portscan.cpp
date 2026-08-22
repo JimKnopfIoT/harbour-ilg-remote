@@ -1,5 +1,6 @@
 #include "portscan.h"
 
+#include <QCoreApplication>
 #include <QTcpSocket>
 #include <QTimer>
 #include <QVector>
@@ -11,16 +12,16 @@ struct Known { int port; const char *service; };
 /* Am Geraet gemessen offen: 3000, 3001, 9922, 7000, 36866.
    Die uebrigen stehen mit drin, damit eine Aenderung auffaellt. */
 const QVector<Known> kPorts = {
-    { 3000,  "SSAP unverschlüsselt (von der Firmware abgewiesen)" },
-    { 3001,  "SSAP über TLS – die Verbindung dieser App" },
-    { 7000,  "AirPlay" },
-    { 9922,  "Developer Mode SSH" },
-    { 36866, "webOS intern" },
-    { 22,    "SSH" },
-    { 80,    "HTTP" },
-    { 443,   "HTTPS" },
-    { 1900,  "UPnP" },
-    { 8080,  "HTTP alternativ" },
+    { 3000,  QT_TRANSLATE_NOOP("PortScan", "SSAP unencrypted (refused by the firmware)") },
+    { 3001,  QT_TRANSLATE_NOOP("PortScan", "SSAP over TLS - the connection this app uses") },
+    { 7000,  QT_TRANSLATE_NOOP("PortScan", "AirPlay") },
+    { 9922,  QT_TRANSLATE_NOOP("PortScan", "Developer mode SSH") },
+    { 36866, QT_TRANSLATE_NOOP("PortScan", "webOS internal") },
+    { 22,    QT_TRANSLATE_NOOP("PortScan", "SSH") },
+    { 80,    QT_TRANSLATE_NOOP("PortScan", "HTTP") },
+    { 443,   QT_TRANSLATE_NOOP("PortScan", "HTTPS") },
+    { 1900,  QT_TRANSLATE_NOOP("PortScan", "UPnP") },
+    { 8080,  QT_TRANSLATE_NOOP("PortScan", "HTTP alternative") },
 };
 
 } // namespace
@@ -41,7 +42,7 @@ void PortScan::scan(const QString &host)
         timer->setInterval(1500);
 
         const int port = k.port;
-        const QString service = QString::fromUtf8(k.service);
+        const QString service = QCoreApplication::translate("PortScan", k.service);
 
         // Genau einmal melden, egal ob Erfolg, Fehler oder Zeitablauf
         auto report = [this, sock, timer, port, service](bool open) {

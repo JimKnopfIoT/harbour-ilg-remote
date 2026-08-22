@@ -1,10 +1,8 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
 
-/* Kachel im Hintergrund: die Eingangsseite schemenhaft nachgezeichnet.
-   Ein echter Abzug der Seite ginge nicht - die Kachel ist ein eigenes
-   Fenster und sieht die Seite nicht. Also eine vereinfachte Skizze, die
-   den Zustand ueber die Farbe des Ein/Aus-Zeichens mitfuehrt. */
+/* Die Kachel ist ein eigenes Fenster und sieht die Seite nicht - also eine
+   Skizze, die den Zustand ueber die Farbe des Ein/Aus-Zeichens fuehrt. */
 CoverBackground {
     id: cover
 
@@ -85,8 +83,8 @@ CoverBackground {
             bottomMargin: Theme.paddingLarge
         }
         text: tv && tv.registered
-              ? (tv.volume >= 0 ? (tv.muted ? "stumm" : "♪ " + tv.volume) : "verbunden")
-              : "getrennt"
+              ? (tv.volume >= 0 ? (tv.muted ? qsTr("muted") : "♪ " + tv.volume) : qsTr("connected"))
+              : qsTr("disconnected")
         font.pixelSize: Theme.fontSizeSmall
         color: cover.stateColor
     }

@@ -1,7 +1,8 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
 
-/* Zweite Karussellseite: Zahlenblock mit vierstelliger Kanalanzeige. */
+/* Zweite Karussellseite: Zahlenblock mit vierstelliger Kanalanzeige und den
+   vier frei belegbaren Direktaufrufen. */
 Item {
     id: panel
 
@@ -18,9 +19,13 @@ Item {
 
     function push(d) {
         if (entry.length < 4) entry += d
-        // Die Ziffer zusaetzlich direkt senden - so reagiert der Fernseher
-        // sofort, wie bei der Originalfernbedienung
+        // Zusaetzlich direkt senden - so reagiert der Fernseher sofort
         tv.button(d)
+    }
+
+    function pick(i) {
+        pageStack.push(Qt.resolvedUrl("AppsPage.qml"),
+                       { tv: panel.tv, window: panel.window, pickIndex: i })
     }
 
     SilicaFlickable {
@@ -85,8 +90,8 @@ Item {
                 RemoteKey { text: modelData; onPressed: panel.push(modelData) }
             }
 
-            // Abbruch links, Bestätigen unten rechts – dort sitzt auf jedem
-            // Ziffernblock die Eingabetaste, dorthin geht der Finger von selbst
+            // Abbruch links, Bestaetigen unten rechts - dort sitzt auf jedem
+            // Ziffernblock die Eingabetaste
             IconKey {
                 icon: "icon-m-clear"
                 onPressed: panel.entry = ""
@@ -108,49 +113,92 @@ Item {
         }
 
         // ---------- Direktaufrufe ----------
-        // Deutlich abgesetzt vom Ziffernblock, mit den Symbolen, die der
-        // Fernseher selbst fuer diese Apps fuehrt.
+        // Fuenf frei belegbare Kacheln (langer Druck belegt neu), die sechste
+        // ist fest das Bildschirmfoto. Rasterbreite wie das Tastenfeld.
 
         Item { width: 1; height: Theme.itemSizeSmall }
 
-        Row {
+        Grid {
             anchors.horizontalCenter: parent.horizontalCenter
+            columns: 3
             spacing: Theme.paddingLarge
             enabled: panel.tv.registered
             opacity: panel.tv.registered ? 1.0 : 0.3
 
             Repeater {
-                /* webOS application ids. These are examples - edit them to
-                   match the apps installed on your own TV. */
-                model: [
-                    { "img": "tv.png",       "id": "com.webos.app.livetv",   "t": "TV" },
-                    { "img": "youtube.png",  "id": "youtube.leanback.v4",    "t": "YouTube" },
-                    { "img": "jellyfin.png", "id": "org.jellyfin.webos",     "t": "Jellyfin" },
-                    { "img": "balkon.png",   "id": "com.example.dashboard",  "t": "Dashboard" }
-                ]
+                model: panel.window.tiles
 
                 MouseArea {
-                    width: Theme.itemSizeMedium
-                    height: Theme.itemSizeMedium
+                    width: Theme.itemSizeLarge
+                    height: Theme.itemSizeLarge
 
                     Rectangle {
-                        width: parent.width
-                        height: parent.width
+                        anchors.fill: parent
                         radius: Theme.paddingMedium
                         color: parent.pressed ? Theme.rgba(Theme.highlightBackgroundColor, 0.5)
                                               : "transparent"
+                        border.width: modelData.id.length > 0 ? 0 : 1
+                        border.color: Theme.rgba(Theme.primaryColor, 0.22)
                     }
 
                     Image {
+                        id: tileIcon
                         anchors.centerIn: parent
-                        width: parent.width - 2 * Theme.paddingSmall
+                        width: parent.width - 2 * Theme.paddingMedium
                         height: width
                         fillMode: Image.PreserveAspectFit
-                        source: "../images/" + modelData.img
+                        source: modelData.img.length > 0
+                                ? "../images/" + modelData.img
+                                : modelData.icon.length > 0
+                                  ? "image://tvicon/" + encodeURIComponent(modelData.icon) : ""
+                        visible: status === Image.Ready
                     }
 
-                    onPressed: panel.tv.launchApp(modelData.id)
+                    Label {
+                        anchors.centerIn: parent
+                        width: parent.width - Theme.paddingSmall
+                        visible: !tileIcon.visible
+                        horizontalAlignment: Text.AlignHCenter
+                        text: modelData.id.length > 0 ? modelData.label : "+"
+                        truncationMode: TruncationMode.Fade
+                        font.pixelSize: modelData.id.length > 0 ? Theme.fontSizeExtraSmall
+                                                                : Theme.fontSizeLarge
+                        color: Theme.secondaryColor
+                    }
+
+                    onClicked: {
+                        if (modelData.id.length === 0)
+                            panel.pick(index)
+                        else if (modelData.kind === "input")
+                            panel.tv.switchInput(modelData.id)
+                        else
+                            panel.tv.launchApp(modelData.id)
+                    }
+                    onPressAndHold: panel.pick(index)
                 }
+            }
+
+            // Feste sechste Kachel
+            MouseArea {
+                width: Theme.itemSizeLarge
+                height: Theme.itemSizeLarge
+
+                Rectangle {
+                    anchors.fill: parent
+                    radius: Theme.paddingMedium
+                    color: parent.pressed ? Theme.rgba(Theme.highlightBackgroundColor, 0.5)
+                                          : "transparent"
+                }
+
+                Image {
+                    anchors.centerIn: parent
+                    width: parent.width - 2 * Theme.paddingMedium
+                    height: width
+                    fillMode: Image.PreserveAspectFit
+                    source: "../images/shutter.png"
+                }
+
+                onClicked: panel.tv.captureScreen()
             }
         }
     }

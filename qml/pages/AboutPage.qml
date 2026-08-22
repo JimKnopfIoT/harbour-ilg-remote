@@ -15,7 +15,7 @@ Page {
             width: parent.width
             spacing: Theme.paddingMedium
 
-            PageHeader { title: "Über" }
+            PageHeader { title: qsTr("About") }
 
             Image {
                 anchors.horizontalCenter: parent.horizontalCenter
@@ -27,14 +27,14 @@ Page {
 
             Label {
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: "LG Fernbedienung"
+                text: qsTr("LG remote")
                 font.pixelSize: Theme.fontSizeLarge
                 color: Theme.highlightColor
             }
 
             Label {
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: "Version 1.0.0"
+                text: qsTr("Version %1").arg("1.1.0")
                 font.pixelSize: Theme.fontSizeSmall
                 color: Theme.secondaryColor
             }
@@ -46,12 +46,10 @@ Page {
                 width: parent.width - 2 * Theme.horizontalPageMargin
                 wrapMode: Text.Wrap
                 font.pixelSize: Theme.fontSizeSmall
-                text: "Steuert LG-Fernseher mit webOS über das Netzwerk – ohne Infrarot, " +
-                      "ohne Sichtverbindung. Verwendet wird LGs eigenes SSAP-Protokoll, " +
-                      "dasselbe, das auch die offizielle Fernbedienungs-App spricht."
+                text: qsTr("Controls LG televisions running webOS over the network - no infrared, no line of sight. It speaks LG's own SSAP protocol, the same one the official remote app uses.")
             }
 
-            SectionHeader { text: "Technische Hinweise" }
+            SectionHeader { text: qsTr("Technical notes") }
 
             Label {
                 x: Theme.horizontalPageMargin
@@ -59,19 +57,11 @@ Page {
                 wrapMode: Text.Wrap
                 font.pixelSize: Theme.fontSizeExtraSmall
                 color: Theme.secondaryColor
-                text: "Die Verbindung läuft über <b>wss auf Port 3001</b>. Das " +
-                      "unverschlüsselte Port 3000, das ältere Fernbedienungs-Apps " +
-                      "verwenden, wird von aktueller Firmware abgewiesen.\n\n" +
-                      "Der Fernseher weist sich mit einem selbstsignierten Zertifikat " +
-                      "aus, und die Protokollversion wird fest auf TLS 1.2 gesetzt – " +
-                      "der Fernseher bevorzugt TLS 1.3, das Qt 5.6 noch nicht kennt.\n\n" +
-                      "Die Tasten laufen über einen zweiten Kanal, dessen Adresse der " +
-                      "Fernseher erst auf Anfrage herausgibt. Einschalten geschieht per " +
-                      "Wake-on-LAN, dafür wird die MAC-Adresse benötigt."
+                text: qsTr("The connection uses <b>wss on port 3001</b>. The unencrypted port 3000 that older remote apps use is refused by current firmware.\n\nThe TV identifies itself with a self-signed certificate; its fingerprint is remembered on the first connection and checked from then on. The TLS version is left to the library; the TV takes 1.2 as well as 1.3, but now and then it drops a handshake without answering - the app simply tries again.\n\nThe keys run over a second channel whose address the TV only hands out on request. Powering on works via Wake-on-LAN and needs the MAC address.")
                 textFormat: Text.StyledText
             }
 
-            SectionHeader { text: "Herkunft" }
+            SectionHeader { text: qsTr("Origin") }
 
             Label {
                 x: Theme.horizontalPageMargin
@@ -79,10 +69,7 @@ Page {
                 wrapMode: Text.Wrap
                 font.pixelSize: Theme.fontSizeExtraSmall
                 color: Theme.secondaryColor
-                text: "Eigenentwicklung. Die Idee zu Touchpad und Texteingabe stammt " +
-                      "aus harbour-lgremote-webos von CODeRUS und Mazhoon (WTFPL); " +
-                      "dessen Code selbst ließ sich nicht verwenden, weil er auf " +
-                      "Port 3000 und die QML-WebSocket-Komponente setzt."
+                text: qsTr("Written from scratch. The idea for the touchpad and text entry comes from harbour-lgremote-webos by CODeRUS and Mazhoon (WTFPL); its code could not be reused because it relies on port 3000 and the QML WebSocket component.")
             }
 
             Item { width: 1; height: Theme.paddingLarge }

@@ -5,30 +5,42 @@ A native **SailfishOS** remote control for **LG webOS** televisions.
 It speaks the LG **SSAP** WebSocket protocol (over TLS) directly — d-pad,
 volume, channels, inputs, media keys, a pointer/touchpad, a number pad and app
 launching — and powers the TV on with **Wake-on-LAN**. TVs are found by SSDP
-discovery (or a quick port scan), and several TVs can be stored and switched
-between.
+discovery, with a fallback scan of the local subnet, and several TVs can be
+stored and switched between.
 
 > Package id: `harbour-lgremote`. Built and used on a Sony Xperia 10 III
-> (SailfishOS 5.x). The UI is German.
+> (SailfishOS 5.x). English and German user interface.
 
 |  |  |  |
 |---|---|---|
 | ![Remote](docs/screenshots/remote.png) | ![Number pad](docs/screenshots/numbers.png) | ![Pointer](docs/screenshots/pointer.png) |
 
-*(The three carousel pages — remote, number pad, pointer. App-launch logos are
-shown as neutral placeholders.)*
+*(The three carousel pages — remote, number pad, pointer. On the number pad,
+the six quick-launch tiles: five assignable ones — brand logos replaced by
+neutral placeholders here — and the fixed shutter tile.)*
+
+![Screenshot taken from the TV](docs/screenshots/tv-capture.jpg)
+
+*(What the shutter tile brings back: the TV's current picture at 960×540,
+stored in the gallery. Example content.)*
 
 ## Features
 
 * Pairing with the TV's prompt; the per-device client key is stored locally.
 * Directional pad, OK/Back/Home, volume and channel, input switching.
 * A pointer / touchpad panel (magic-remote style) and an on-screen keyboard bridge.
-* Number pad and quick app-launch buttons (edit the app ids to match your TV).
+* Number pad and a 2×3 quick-launch block: five tiles you assign yourself
+  (press and hold one to pick an app or input), plus a fixed **screenshot**
+  tile that stores the TV's current picture in the gallery.
+* Apps and inputs listed with the icons the TV serves, sorted by name.
 * **Wake-on-LAN** power-on via a magic packet.
 * A **self-healing connection**: a heartbeat spots a link that died silently
   (phone asleep, TV switched off), and the app reconnects on its own with a
   growing delay. Deliberate disconnects stay disconnected.
-* **Discovery** by SSDP, plus an optional port scan of the local subnet.
+* **Discovery** by SSDP — repeated on every network interface, and if nothing
+  answers, the local subnet is probed on port 3001.
+* **Certificate pinning**: the TV's self-signed certificate is remembered on the
+  first connection and checked from then on.
 * Multiple devices — add, edit and switch between TVs.
 * A cover with play/pause and connection state.
 

@@ -19,17 +19,17 @@ Page {
             width: parent.width
             spacing: Theme.paddingMedium
 
-            PageHeader { title: "Einstellungen" }
+            PageHeader { title: qsTr("Settings") }
 
-            // ---------- Service-Menüs des Fernsehers ----------
-            // Eingeklappt und mit Rückfrage: hier lassen sich Geräte-
-            // einstellungen verstellen, die im normalen Menü nicht auftauchen.
+            // ---------- Service-Menues ----------
+            // Eingeklappt und mit Rueckfrage: hier stehen Geraeteparameter,
+            // die das normale Menue nicht zeigt.
 
             ExpandingSectionGroup {
                 currentIndex: -1
 
                 ExpandingSection {
-                    title: "Service-Menüs des Fernsehers"
+                    title: qsTr("Service menus of the TV")
 
                     content.sourceComponent: Column {
                         width: parent.width
@@ -41,12 +41,7 @@ Page {
                             wrapMode: Text.Wrap
                             font.pixelSize: Theme.fontSizeExtraSmall
                             color: Theme.errorColor
-                            text: "Achtung: Diese Menüs sind für den Kundendienst gedacht. " +
-                                  "Dort lassen sich Bild-, Ton- und Geräteparameter verstellen, " +
-                                  "die im normalen Menü nicht erreichbar sind. Änderungen " +
-                                  "können den Fernseher unbrauchbar machen und sind teils nicht " +
-                                  "zurücknehmbar. Nur öffnen, wenn du weißt, was du tust – und " +
-                                  "nichts verstellen, was du nicht wiederherstellen kannst."
+                            text: qsTr("Warning: these menus are meant for service technicians. They expose picture, sound and device parameters that the normal menu does not reach. Changes can render the TV unusable and are partly irreversible. Only open them if you know what you are doing.")
                         }
 
                         Repeater {
@@ -62,7 +57,7 @@ Page {
                                 enabled: tv.pointerReady
                                 onClicked: {
                                     var n = modelData.name
-                                    remorse.execute(modelData.text + " wird geöffnet",
+                                    remorse.execute(qsTr("Opening %1").arg(modelData.text),
                                                     function () { tv.sendRaw(n) })
                                 }
                             }
@@ -74,25 +69,24 @@ Page {
                             wrapMode: Text.Wrap
                             font.pixelSize: Theme.fontSizeTiny
                             color: Theme.secondaryColor
-                            text: "Herauskommen: Zurück-Taste, notfalls den Fernseher aus- und " +
-                                  "wieder einschalten."
+                            text: qsTr("Way out: the back key, or switch the TV off and on again.")
                         }
                     }
                 }
             }
 
-            // ---------- Aktuelles Gerät ----------
+            // ---------- Aktuelles Geraet ----------
 
-            SectionHeader { text: "Gerät" }
+            SectionHeader { text: qsTr("Device") }
 
-            DetailItem { label: "Name";    value: page.window.deviceName }
-            DetailItem { label: "Adresse"; value: page.window.host }
-            DetailItem { label: "MAC";     value: page.window.mac.length > 0
-                                                  ? page.window.mac : "nicht hinterlegt" }
+            DetailItem { label: qsTr("Name");    value: page.window.deviceName }
+            DetailItem { label: qsTr("Address"); value: page.window.host }
+            DetailItem { label: qsTr("MAC");     value: page.window.mac.length > 0
+                                                        ? page.window.mac : qsTr("not stored") }
 
             Button {
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: "Geräte verwalten"
+                text: qsTr("Manage devices")
                 onClicked: pageStack.push(Qt.resolvedUrl("DevicesPage.qml"),
                                           { tv: page.tv, window: page.window })
             }
@@ -103,13 +97,12 @@ Page {
                 wrapMode: Text.Wrap
                 font.pixelSize: Theme.fontSizeExtraSmall
                 color: Theme.secondaryColor
-                text: "Wake-on-LAN muss am Fernseher aktiviert sein: Einstellungen → " +
-                      "Allgemein → Externe Geräte → Über Mobilgerät einschalten."
+                text: qsTr("Wake-on-LAN has to be enabled on the TV: Settings → General → External devices → Turn on via mobile device.")
             }
 
-            // ---------- Lautstärke abgleichen ----------
+            // ---------- Lautstaerke abgleichen ----------
 
-            SectionHeader { text: "Lautstärke abgleichen" }
+            SectionHeader { text: qsTr("Match the volume") }
 
             Label {
                 x: Theme.horizontalPageMargin
@@ -117,11 +110,7 @@ Page {
                 wrapMode: Text.Wrap
                 font.pixelSize: Theme.fontSizeExtraSmall
                 color: Theme.secondaryColor
-                text: "Hängt der Ton über ARC an einem externen Gerät, führt der Fernseher " +
-                      "einen eigenen Zähler, der mit dem echten Pegel nichts zu tun hat – " +
-                      "die Anlage meldet ihren Stand nie zurück, das ist am CEC-Bus " +
-                      "nachgemessen. Trag hier ein, was am Gerät steht, dann zieht die " +
-                      "Anzeige nach und bleibt im Gleichschritt."
+                text: qsTr("With the sound on an external device over ARC, the TV keeps a counter of its own that has nothing to do with the real level - the amplifier never reports back. Enter what the device shows and the display follows along.")
             }
 
             Row {
@@ -132,7 +121,7 @@ Page {
                 TextField {
                     id: volField
                     width: parent.width - volSet.width - Theme.paddingMedium
-                    label: "Pegel am Tongerät"
+                    label: qsTr("Level on the audio device")
                     placeholderText: String(tv.volume >= 0 ? tv.volume : 0)
                     inputMethodHints: Qt.ImhDigitsOnly
                     validator: IntValidator { bottom: 0; top: 100 }
@@ -143,7 +132,7 @@ Page {
                 Button {
                     id: volSet
                     anchors.verticalCenter: volField.verticalCenter
-                    text: "Setzen"
+                    text: qsTr("Set")
                     enabled: tv.registered && volField.text.length > 0
                     onClicked: apply()
 
@@ -158,7 +147,7 @@ Page {
 
             // ---------- Kopplung ----------
 
-            SectionHeader { text: "Kopplung" }
+            SectionHeader { text: qsTr("Pairing") }
 
             Label {
                 x: Theme.horizontalPageMargin
@@ -167,23 +156,31 @@ Page {
                 font.pixelSize: Theme.fontSizeSmall
                 color: Theme.secondaryHighlightColor
                 text: tv.clientKey.length > 0
-                      ? "Gekoppelt. Der Fernseher fragt nicht mehr nach."
-                      : "Noch nicht gekoppelt. Beim Verbinden erscheint eine Abfrage am Fernseher."
+                      ? qsTr("Paired. The TV no longer asks.")
+                      : qsTr("Not paired yet. Connecting brings up a prompt on the TV.")
+            }
+
+            DetailItem {
+                label: qsTr("Certificate")
+                // Die ersten Bytes reichen zum Vergleichen
+                value: tv.certFingerprint.length > 0
+                       ? tv.certFingerprint.substring(0, 16) : qsTr("not stored")
             }
 
             Button {
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: "Kopplung zurücksetzen"
-                enabled: tv.clientKey.length > 0
+                text: qsTr("Reset pairing")
+                enabled: tv.clientKey.length > 0 || tv.certFingerprint.length > 0
                 onClicked: {
                     tv.clientKey = ""
+                    tv.certFingerprint = ""
                     tv.disconnectTv()
                 }
             }
 
             // ---------- Tastencode ----------
 
-            SectionHeader { text: "Tastencode ausprobieren" }
+            SectionHeader { text: qsTr("Try a key code") }
 
             Label {
                 x: Theme.horizontalPageMargin
@@ -191,10 +188,7 @@ Page {
                 wrapMode: Text.Wrap
                 font.pixelSize: Theme.fontSizeExtraSmall
                 color: Theme.secondaryColor
-                text: "Der Fernseher nimmt rund 450 Tastennamen entgegen; ungültige " +
-                      "verwirft er stumm. Hier lässt sich einer ausprobieren, ohne die " +
-                      "App neu zu bauen – etwa QMENU, MYAPPS, RECENT, LIST, SIMPLINK, " +
-                      "GUIDE oder SCREEN_REMOTE."
+                text: qsTr("The TV accepts about 450 key names and silently drops invalid ones. Try one here without rebuilding the app - QMENU, MYAPPS, RECENT, LIST, SIMPLINK, GUIDE or SCREEN_REMOTE for instance.")
             }
 
             Row {
@@ -205,8 +199,8 @@ Page {
                 TextField {
                     id: rawField
                     width: parent.width - rawSend.width - Theme.paddingMedium
-                    placeholderText: "z. B. INPUT"
-                    label: "Tastenname"
+                    placeholderText: qsTr("e.g. INPUT")
+                    label: qsTr("Key name")
                     enabled: tv.pointerReady
                     inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText
                     EnterKey.iconSource: "image://theme/icon-m-enter-accept"
@@ -216,7 +210,7 @@ Page {
                 Button {
                     id: rawSend
                     anchors.verticalCenter: rawField.verticalCenter
-                    text: "Senden"
+                    text: qsTr("Send")
                     enabled: tv.pointerReady && rawField.text.length > 0
                     onClicked: fire()
 
@@ -229,19 +223,20 @@ Page {
 
             // ---------- Zustand ----------
 
-            SectionHeader { text: "Zustand" }
+            SectionHeader { text: qsTr("State") }
 
-            DetailItem { label: "Verbindung";  value: tv.linkUp ? "offen" : "getrennt" }
-            DetailItem { label: "Gekoppelt";   value: tv.registered ? "ja" : "nein" }
-            DetailItem { label: "Tastenkanal"; value: tv.pointerReady ? "bereit" : "nicht bereit" }
-            DetailItem { label: "Meldung";     value: tv.statusText }
-            DetailItem { label: "Textfeld am TV"
+            DetailItem { label: qsTr("Connection"); value: tv.linkUp ? qsTr("open") : qsTr("closed") }
+            DetailItem { label: qsTr("Paired");     value: tv.registered ? qsTr("yes") : qsTr("no") }
+            DetailItem { label: qsTr("Key channel"); value: tv.pointerReady ? qsTr("ready")
+                                                                            : qsTr("not ready") }
+            DetailItem { label: qsTr("Message");    value: tv.statusText }
+            DetailItem { label: qsTr("Text field on the TV")
                          value: tv.textInputReady
-                                ? "bereit (" + tv.textInputType + ", "
-                                  + tv.textInputLength + " Zeichen)"
-                                : "kein Feld offen" }
+                                ? qsTr("ready (%1, %2 characters)").arg(tv.textInputType)
+                                                                   .arg(tv.textInputLength)
+                                : qsTr("no field open") }
 
-            SectionHeader { text: "Diagnose" }
+            SectionHeader { text: qsTr("Diagnostics") }
 
             Label {
                 x: Theme.horizontalPageMargin

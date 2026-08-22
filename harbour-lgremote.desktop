@@ -3,5 +3,12 @@ Type=Application
 X-Nemo-Application-Type=silica-qt5
 Icon=harbour-lgremote
 Exec=harbour-lgremote
-Name=LG Fernbedienung
+Name=LG remote
 Name[de]=LG Fernbedienung
+
+[X-Sailjail]
+OrganizationName=harbour-lgremote
+ApplicationName=harbour-lgremote
+# Internet: SSAP zum Fernseher, SSDP, Wake-on-LAN. Pictures: die
+# Bildschirmfotos landen in der Galerie.
+Permissions=Internet;Pictures

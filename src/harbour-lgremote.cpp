@@ -8,6 +8,7 @@
 #include "discovery.h"
 #include "lgtv.h"
 #include "portscan.h"
+#include "tvicons.h"
 #include "wol.h"
 
 int main(int argc, char *argv[])
@@ -17,6 +18,11 @@ int main(int argc, char *argv[])
     qmlRegisterType<LgTv>("harbour.lgremote", 1, 0, "LgTv");
 
     QScopedPointer<QQuickView> view(SailfishApp::createView());
+
+    // Die Engine uebernimmt den Anbieter, die Zeigerkopie bleibt fuer QML
+    TvIcons *icons = new TvIcons;
+    view->engine()->addImageProvider(QStringLiteral("tvicon"), icons);
+    view->rootContext()->setContextProperty(QStringLiteral("icons"), icons);
 
     Wol wol;
     view->rootContext()->setContextProperty(QStringLiteral("Wol"), &wol);
