@@ -6,6 +6,7 @@
 #include <QObject>
 #include <QSslError>
 #include <QString>
+#include <QStringList>
 #include <QVariantList>
 #include <QVariantMap>
 #include <QTimer>
@@ -53,6 +54,13 @@ class LgTv : public QObject
     Q_PROPERTY(QString channel READ channel NOTIFY channelChanged)
     // Steht YouTube auf dem Bildschirm? Danach richtet sich das Textfeld
     Q_PROPERTY(bool youtubeAhead READ youtubeAhead NOTIFY foregroundAppChanged)
+    /* Der Fernseher meldet seinen Einschaltzustand selbst. Ohne diese Auskunft
+       hiesse "Verbindung steht" faelschlich "Fernseher an": im Netzwerk-
+       Standby nimmt er Verbindungen an, ist aber aus. */
+    Q_PROPERTY(QString powerState READ powerState NOTIFY powerStateChanged)
+    Q_PROPERTY(bool awake READ awake NOTIFY powerStateChanged)
+    // Wahr, solange der Fernseher den Zustand nicht genannt hat
+    Q_PROPERTY(bool powerUnknown READ powerUnknown NOTIFY powerStateChanged)
 
 public:
     explicit LgTv(QObject *parent = nullptr);
@@ -87,6 +95,12 @@ public:
     Q_INVOKABLE void changeSoundOutput(const QString &out);
     QString channel() const { return m_channel; }
     bool youtubeAhead() const { return m_ytVisible; }
+    QString powerState() const { return m_power; }
+    bool powerUnknown() const { return m_power.isEmpty(); }
+    /* "Screen Off" heisst an, nur der Bildschirm ist dunkel - etwa bei
+       Musikwiedergabe. "Active Standby" und "Suspend" heissen aus. */
+    bool awake() const;
+    Q_INVOKABLE void requestPowerState();
     /* Das Abo meldet zuverlaessig nur das Verschwinden - deshalb bei Bedarf
        nachfragen. */
     Q_INVOKABLE void refreshYouTubeState();
@@ -146,8 +160,9 @@ public:
     /* Systemdaten fuer die Uebersichtsseite */
     Q_INVOKABLE void requestSystemInfo();
     Q_INVOKABLE void requestNetworkInfo();
+    // Wie oben, aber mit Nachfassen, wenn keine MAC dabei ist
+    void chaseNetworkInfo();
     Q_INVOKABLE void requestAudioStatus();
-    Q_INVOKABLE void requestSoftwareInfo();
 
 signals:
     void hostChanged();
@@ -159,6 +174,7 @@ signals:
     void textInputChanged();
     void channelChanged();
     void foregroundAppChanged();
+    void powerStateChanged();
 
     void pairingPrompt();                       // TV fragt nach Bestaetigung
     void appsReceived(const QVariantList &apps);
@@ -167,10 +183,11 @@ signals:
     void tunerReceived(const QString &type);
     void deviceInfoChanged();
     void networkInfoReceived(const QVariantMap &info);
-    // MAC der aktiven Schnittstelle; nur der verbundene TV nennt sie
-    void macDiscovered(const QString &mac);
+    /* Alle anfunkbaren MACs des Fernsehers, die erkannte zuerst. Mehrzahl
+       mit Absicht: manche Firmware nennt zu ihren Schnittstellen weder
+       Adresse noch Zustand, dann ist keine Wahl zu treffen. */
+    void macsDiscovered(const QStringList &macs);
     void audioStatusReceived(const QVariantMap &info);
-    void softwareInfoReceived(const QVariantMap &info);
     void tlsInfoChanged();
     void captureReady(const QString &url);
     void failed(const QString &message);
@@ -186,8 +203,18 @@ private slots:
 private:
     // WantHeartbeat: dass die Antwort ankommt, ist die ganze Information
     enum Want { WantNothing, WantVolume, WantPointer, WantApps, WantInputs,
-                WantSystem, WantNetwork, WantAudio, WantSoftware, WantChannel,
-                WantKeyboard, WantTextResult, WantAppState, WantHeartbeat, WantCapture };
+                WantSystem, WantNetwork, WantAudio, WantChannel,
+                WantKeyboard, WantTextResult, WantAppState, WantHeartbeat, WantCapture,
+                WantPower };
+
+    /* Zu jeder offenen Anfrage die Adresse mitfuehren: kommt statt der
+       Antwort ein Fehler, soll im Protokoll stehen, was misslungen ist -
+       nicht nur, dass etwas misslang. */
+    struct Pending {
+        Want want;              // ohne Vorgabe: so bleibt es ein Aggregat
+        QString uri;
+    };
+    static QString wantName(Want want);
 
     bool acceptCert(const QList<QSslError> &errors);
     void flushMove();
@@ -232,6 +259,7 @@ private:
     int m_textInputLength = 0;
     QString m_channel;
     bool m_ytVisible = false;
+    QString m_power;
     bool m_ytRunning = false;
     /* Null: nichts offen. Leer: App nur nach vorn holen. Sonst Suchbegriff. */
     QString m_pendingSearch;
@@ -265,12 +293,15 @@ private:
     int m_tlsTries = 0;
     QString m_model;
     QString m_serial;
+    /* Die MAC kommt nur vom verbundenen Fernseher, und nur diese eine
+       Abfrage nennt sie. Bleibt sie aus, wird nachgefasst. */
+    int m_netTries = 0;
 
     int m_counter = 0;
-    QHash<QString, Want> m_pending;
+    QHash<QString, Pending> m_pending;
     /* Abos bleiben stehen: der TV schickt jede Aenderung unter derselben
        Kennung, auch bei Bedienung ueber die Originalfernbedienung. */
-    QHash<QString, Want> m_subs;
+    QHash<QString, Pending> m_subs;
     QString m_sslNote;
     QString m_lastError;
 };

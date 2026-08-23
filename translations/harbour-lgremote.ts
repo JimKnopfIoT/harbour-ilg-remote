@@ -19,17 +19,32 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/AboutPage.qml" line="49"/>
+        <location filename="../qml/pages/AboutPage.qml" line="46"/>
+        <source>Glossary</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AboutPage.qml" line="54"/>
+        <source>Error log (%1)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AboutPage.qml" line="55"/>
+        <source>Error log - empty</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AboutPage.qml" line="66"/>
         <source>Controls LG televisions running webOS over the network - no infrared, no line of sight. It speaks LG&apos;s own SSAP protocol, the same one the official remote app uses.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/AboutPage.qml" line="52"/>
+        <location filename="../qml/pages/AboutPage.qml" line="69"/>
         <source>Technical notes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/AboutPage.qml" line="60"/>
+        <location filename="../qml/pages/AboutPage.qml" line="77"/>
         <source>The connection uses &lt;b&gt;wss on port 3001&lt;/b&gt;. The unencrypted port 3000 that older remote apps use is refused by current firmware.
 
 The TV identifies itself with a self-signed certificate; its fingerprint is remembered on the first connection and checked from then on. The TLS version is left to the library; the TV takes 1.2 as well as 1.3, but now and then it drops a handshake without answering - the app simply tries again.
@@ -38,12 +53,12 @@ The keys run over a second channel whose address the TV only hands out on reques
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/AboutPage.qml" line="64"/>
+        <location filename="../qml/pages/AboutPage.qml" line="81"/>
         <source>Origin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/AboutPage.qml" line="72"/>
+        <location filename="../qml/pages/AboutPage.qml" line="89"/>
         <source>Written from scratch. The idea for the touchpad and text entry comes from harbour-lgremote-webos by CODeRUS and Mazhoon (WTFPL); its code could not be reused because it relies on port 3000 and the QML WebSocket component.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -86,12 +101,12 @@ The keys run over a second channel whose address the TV only hands out on reques
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppsPage.qml" line="120"/>
+        <location filename="../qml/pages/AppsPage.qml" line="136"/>
         <source>Nothing found</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppsPage.qml" line="121"/>
+        <location filename="../qml/pages/AppsPage.qml" line="137"/>
         <source>Is the television connected?</source>
         <translation type="unfinished"></translation>
     </message>
@@ -165,298 +180,891 @@ The keys run over a second channel whose address the TV only hands out on reques
 <context>
     <name>DevicesPage</name>
     <message>
-        <location filename="../qml/pages/DevicesPage.qml" line="38"/>
+        <location filename="../qml/pages/DevicesPage.qml" line="72"/>
         <source>Devices</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/DevicesPage.qml" line="46"/>
+        <location filename="../qml/pages/DevicesPage.qml" line="80"/>
         <source>Tapping switches to the device. The pairing key is stored per device, so switching needs no new confirmation.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/DevicesPage.qml" line="54"/>
+        <location filename="../qml/pages/DevicesPage.qml" line="99"/>
+        <source>Disconnect</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DevicesPage.qml" line="99"/>
+        <source>Connect</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DevicesPage.qml" line="103"/>
         <source>Searching ...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/DevicesPage.qml" line="54"/>
+        <location filename="../qml/pages/DevicesPage.qml" line="103"/>
         <source>Search the network</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/DevicesPage.qml" line="59"/>
+        <location filename="../qml/pages/DevicesPage.qml" line="108"/>
+        <source>Check availability</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DevicesPage.qml" line="112"/>
         <source>Add device manually</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/DevicesPage.qml" line="74"/>
+        <location filename="../qml/pages/DevicesPage.qml" line="149"/>
         <source>Edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/DevicesPage.qml" line="79"/>
-        <source>Remove</source>
+        <location filename="../qml/pages/DevicesPage.qml" line="154"/>
+        <source>Reset pairing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/DevicesPage.qml" line="98"/>
+        <location filename="../qml/pages/DevicesPage.qml" line="159"/>
+        <source>Pairing released. Tapping the device connects again - the TV then asks once more.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DevicesPage.qml" line="163"/>
+        <source>Forget device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DevicesPage.qml" line="164"/>
+        <source>Forgetting</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DevicesPage.qml" line="199"/>
+        <source>on</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DevicesPage.qml" line="200"/>
+        <source>standby · reachable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DevicesPage.qml" line="201"/>
+        <source>reachable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DevicesPage.qml" line="202"/>
+        <source>off</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DevicesPage.qml" line="218"/>
         <source>  ·  paired</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/DevicesPage.qml" line="114"/>
+        <location filename="../qml/pages/DevicesPage.qml" line="231"/>
+        <source>Not available, offline</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DevicesPage.qml" line="232"/>
+        <source>%1 does not answer. It is disconnected from the mains or network standby is switched off - the power key on the first page sends the wake-up signal anyway.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DevicesPage.qml" line="247"/>
         <source>Found on the network</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/DevicesPage.qml" line="123"/>
+        <location filename="../qml/pages/DevicesPage.qml" line="256"/>
         <source>Nothing found. A TV in standby does not answer - switch it on and search again, or add it manually.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/DevicesPage.qml" line="146"/>
+        <location filename="../qml/pages/DevicesPage.qml" line="279"/>
         <source>  ·  tap to add</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/DevicesPage.qml" line="166"/>
+        <location filename="../qml/pages/DevicesPage.qml" line="299"/>
         <source>No device</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/DevicesPage.qml" line="167"/>
+        <location filename="../qml/pages/DevicesPage.qml" line="300"/>
         <source>Search from the menu or add one manually</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>Discovery</name>
+    <message>
+        <location filename="../src/discovery.cpp" line="119"/>
+        <location filename="../src/discovery.cpp" line="152"/>
+        <location filename="../src/discovery.cpp" line="188"/>
+        <location filename="../src/discovery.cpp" line="201"/>
+        <location filename="../src/discovery.cpp" line="246"/>
+        <location filename="../src/discovery.cpp" line="300"/>
+        <source>Search</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/discovery.cpp" line="119"/>
+        <source>no UDP socket for the search - is the phone on a network?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/discovery.cpp" line="153"/>
+        <source>no interface accepted the multicast - trying the default route</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/discovery.cpp" line="189"/>
+        <source>no address of our own in the local network - search not possible</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/discovery.cpp" line="202"/>
+        <source>network too large to scan - add the TV by hand</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/discovery.cpp" line="247"/>
+        <source>nothing found - neither by SSDP nor on port 3001</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/discovery.cpp" line="300"/>
+        <source>device found, but it does not give up its name</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ErrorLogPage</name>
+    <message>
+        <location filename="../qml/pages/ErrorLogPage.qml" line="20"/>
+        <source>Error log</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/ErrorLogPage.qml" line="28"/>
+        <source>Everything the app promised and could not deliver ends up here: a wake-up signal without a MAC address, a key without a key channel, an icon the TV would not hand out. Newest first. The log lives in memory only and is gone when the app closes.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/ErrorLogPage.qml" line="36"/>
+        <source>Copy to clipboard</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/ErrorLogPage.qml" line="41"/>
+        <source>Clear</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/ErrorLogPage.qml" line="86"/>
+        <source>Nothing to report</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/ErrorLogPage.qml" line="87"/>
+        <source>That is the normal case: everything the app started, it finished.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>GlossaryPage</name>
+    <message>
+        <location filename="../qml/pages/GlossaryPage.qml" line="15"/>
+        <source>Keys</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/GlossaryPage.qml" line="17"/>
+        <source>Power</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/GlossaryPage.qml" line="18"/>
+        <source>Short tap sends the wake-up signal over the network (Wake-on-LAN); holding it for two seconds switches the TV off. The colour is the state of the TV, not of the connection: green running, steady orange in standby, blinking orange while connecting, red no connection.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/GlossaryPage.qml" line="20"/>
+        <source>Back</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/GlossaryPage.qml" line="21"/>
+        <source>The back key of the remote. Goes over the key channel, like the arrow keys.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/GlossaryPage.qml" line="22"/>
+        <source>Home</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/GlossaryPage.qml" line="23"/>
+        <source>Opens the home screen of the TV.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/GlossaryPage.qml" line="24"/>
+        <source>Info</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/GlossaryPage.qml" line="25"/>
+        <source>Shows the programme information of the current channel.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/GlossaryPage.qml" line="26"/>
+        <source>Guide</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/GlossaryPage.qml" line="27"/>
+        <source>Opens the programme guide.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/GlossaryPage.qml" line="28"/>
+        <source>Input</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/GlossaryPage.qml" line="29"/>
+        <source>A short tap steps through the inputs like the input key of the original remote. Hold it to get the list of all inputs and apps and switch directly.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/GlossaryPage.qml" line="30"/>
+        <source>Settings of the TV</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/GlossaryPage.qml" line="31"/>
+        <source>The gear sends the MENU key and opens the settings on the TV. It is greyed out while the key channel is closed - the app&apos;s own settings are in the pull-down menu.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/GlossaryPage.qml" line="33"/>
+        <source>Text row</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/GlossaryPage.qml" line="34"/>
+        <source>Send text</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/GlossaryPage.qml" line="35"/>
+        <source>Puts the typed text into the input field open on the TV. Without a field the TV discards the text - the error log says so when that happens.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/GlossaryPage.qml" line="36"/>
+        <source>Search on YouTube</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/GlossaryPage.qml" line="37"/>
+        <source>Hands the term to YouTube as a launch parameter. No on-screen keyboard is involved, which is why this way works even where the app draws its own keyboard.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/GlossaryPage.qml" line="38"/>
+        <source>Clear the field</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/GlossaryPage.qml" line="39"/>
+        <source>Empties the text field in the app - not on the TV.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/GlossaryPage.qml" line="41"/>
+        <source>Tiles</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/GlossaryPage.qml" line="42"/>
+        <source>Screenshot</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/GlossaryPage.qml" line="43"/>
+        <source>Four corners around a lens: the TV takes a picture of its own screen and the app saves it to the gallery under LG Remote. The TV refuses this while copy protection is active - a film from a streaming app usually comes out black.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/GlossaryPage.qml" line="44"/>
+        <source>Free tile</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/GlossaryPage.qml" line="45"/>
+        <source>An empty tile. Tap it to pick an app or an input; a long press on any tile reassigns it.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/GlossaryPage.qml" line="47"/>
+        <source>Devices</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/GlossaryPage.qml" line="48"/>
+        <source>green - on</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/GlossaryPage.qml" line="49"/>
+        <source>The TV says so itself: it is running and can be operated. Only the TV the app is connected to can say this.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/GlossaryPage.qml" line="50"/>
+        <source>orange - standby or reachable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/GlossaryPage.qml" line="51"/>
+        <source>The TV answers on port 3001, but it is not running: network standby. Answering is not the same as being awake, which is why this is not green. For a TV the app is not connected to, the state cannot be told apart - it then only says reachable.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/GlossaryPage.qml" line="52"/>
+        <source>red - off</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/GlossaryPage.qml" line="53"/>
+        <source>No answer at all: disconnected from the mains, or network standby switched off in the TV settings. It stays in the list - the power key sends the wake-up signal, which needs the MAC address.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/GlossaryPage.qml" line="54"/>
+        <source>tap and hold</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/GlossaryPage.qml" line="55"/>
+        <source>A tap switches to the device and opens its system data - there you can see what state it is in. Holding the entry opens the menu: edit, release the pairing, forget the device. Its first line is deliberately empty so that letting go does nothing.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/GlossaryPage.qml" line="56"/>
+        <source>paired</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/GlossaryPage.qml" line="57"/>
+        <source>A pairing key for this TV is stored. Switching devices then needs no new confirmation on the screen.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/GlossaryPage.qml" line="59"/>
+        <source>Words</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/GlossaryPage.qml" line="60"/>
+        <source>ARC</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/GlossaryPage.qml" line="61"/>
+        <source>The sound runs over the HDMI return channel to an external device. The TV then only counts steps and never learns the real volume - that is why a number would be misleading and ARC is shown instead.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/GlossaryPage.qml" line="62"/>
+        <source>SSAP</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/GlossaryPage.qml" line="63"/>
+        <source>LG&apos;s own protocol on port 3001, the same one the official remote app uses. Encrypted, with the self-signed certificate of the TV.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/GlossaryPage.qml" line="64"/>
+        <source>Wake-on-LAN</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/GlossaryPage.qml" line="65"/>
+        <source>A broadcast packet that wakes the TV. It is addressed by MAC, not by IP - without the MAC address there is no switching on. The TV only names it while connected; it can also be typed in under Devices.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/GlossaryPage.qml" line="76"/>
+        <source>Glossary</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/GlossaryPage.qml" line="84"/>
+        <source>What the symbols on the pages mean.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>LgTv</name>
     <message>
-        <location filename="../src/lgtv.cpp" line="56"/>
+        <location filename="../src/lgtv.cpp" line="89"/>
         <source>external speaker</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="57"/>
+        <location filename="../src/lgtv.cpp" line="90"/>
         <source>optical</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="58"/>
+        <location filename="../src/lgtv.cpp" line="91"/>
         <source>TV speaker</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="59"/>
+        <location filename="../src/lgtv.cpp" line="92"/>
         <source>Bluetooth soundbar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="61"/>
+        <location filename="../src/lgtv.cpp" line="94"/>
         <source>TV speaker + external</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="62"/>
+        <location filename="../src/lgtv.cpp" line="95"/>
+        <location filename="../src/lgtv.cpp" line="252"/>
         <source>unknown</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="72"/>
-        <location filename="../src/lgtv.cpp" line="285"/>
+        <location filename="../src/lgtv.cpp" line="105"/>
+        <location filename="../src/lgtv.cpp" line="415"/>
         <source>disconnected</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="93"/>
+        <location filename="../src/lgtv.cpp" line="125"/>
+        <location filename="../src/lgtv.cpp" line="187"/>
+        <location filename="../src/lgtv.cpp" line="444"/>
+        <location filename="../src/lgtv.cpp" line="479"/>
+        <source>Connection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lgtv.cpp" line="125"/>
+        <source>no answer during the TLS handshake</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lgtv.cpp" line="127"/>
         <source>no answer while connecting</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="142"/>
+        <location filename="../src/lgtv.cpp" line="176"/>
+        <source>Certificate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lgtv.cpp" line="177"/>
+        <source>the TV shows a different certificate than the one remembered - reset the pairing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lgtv.cpp" line="179"/>
         <source>Certificate does not match - reset the pairing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="151"/>
-        <location filename="../src/lgtv.cpp" line="487"/>
+        <location filename="../src/lgtv.cpp" line="188"/>
+        <location filename="../src/lgtv.cpp" line="576"/>
+        <location filename="../src/lgtv.cpp" line="707"/>
         <source>Error: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="174"/>
+        <location filename="../src/lgtv.cpp" line="213"/>
+        <source>not connected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lgtv.cpp" line="243"/>
+        <source>no answer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lgtv.cpp" line="269"/>
         <source>SSL in the Qt build: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="174"/>
-        <location filename="../src/lgtv.cpp" line="732"/>
-        <location filename="../src/lgtv.cpp" line="734"/>
-        <location filename="../src/lgtv.cpp" line="736"/>
+        <location filename="../src/lgtv.cpp" line="269"/>
+        <location filename="../src/lgtv.cpp" line="1044"/>
+        <location filename="../src/lgtv.cpp" line="1046"/>
         <source>yes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="174"/>
+        <location filename="../src/lgtv.cpp" line="269"/>
         <source>NO</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="175"/>
+        <location filename="../src/lgtv.cpp" line="270"/>
         <source>SSL library: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="176"/>
+        <location filename="../src/lgtv.cpp" line="271"/>
         <source>Target: wss://%1:3001</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="178"/>
+        <location filename="../src/lgtv.cpp" line="273"/>
         <source>Certificate: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="180"/>
+        <location filename="../src/lgtv.cpp" line="275"/>
         <source>Last rejected request: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="250"/>
-        <location filename="../src/lgtv.cpp" line="375"/>
+        <location filename="../src/lgtv.cpp" line="378"/>
+        <location filename="../src/lgtv.cpp" line="508"/>
         <source>connecting ...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="261"/>
+        <location filename="../src/lgtv.cpp" line="389"/>
         <source>no device</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="313"/>
+        <location filename="../src/lgtv.cpp" line="444"/>
+        <location filename="../src/lgtv.cpp" line="445"/>
         <source>connection lost</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="348"/>
+        <location filename="../src/lgtv.cpp" line="480"/>
+        <source>no sign of life within 8 s - the connection counts as dead</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lgtv.cpp" line="481"/>
         <source>no answer from the TV</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="421"/>
+        <location filename="../src/lgtv.cpp" line="548"/>
+        <location filename="../src/lgtv.cpp" line="794"/>
+        <source>Key channel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lgtv.cpp" line="549"/>
+        <source>the TV does not hand out the address for the key channel - arrow keys, OK and Back stay locked</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lgtv.cpp" line="551"/>
+        <source>key channel stays closed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lgtv.cpp" line="573"/>
+        <location filename="../src/lgtv.cpp" line="706"/>
+        <source>Sign-on</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lgtv.cpp" line="574"/>
+        <source>the built-in handshake is unreadable - pairing is impossible</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lgtv.cpp" line="589"/>
         <source>waiting for confirmation on the TV</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="422"/>
+        <location filename="../src/lgtv.cpp" line="590"/>
         <source>signing in ...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="447"/>
+        <location filename="../src/lgtv.cpp" line="616"/>
         <source>connected</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="611"/>
-        <source>insertText: accepted</source>
+        <location filename="../src/lgtv.cpp" line="653"/>
+        <location filename="../src/lgtv.cpp" line="736"/>
+        <source>power state</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="612"/>
-        <source>insertText rejected: %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/lgtv.cpp" line="661"/>
-        <source>no screenshot from the TV</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/lgtv.cpp" line="681"/>
-        <source>Model</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/lgtv.cpp" line="682"/>
-        <source>Serial number</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/lgtv.cpp" line="683"/>
-        <source>Tuner</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/lgtv.cpp" line="691"/>
-        <source>MAC wired</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/lgtv.cpp" line="691"/>
-        <source>MAC Wi-Fi</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/lgtv.cpp" line="692"/>
-        <source>MAC direct link</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/lgtv.cpp" line="704"/>
-        <source> - IP</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/lgtv.cpp" line="727"/>
-        <source>Sound output</source>
+        <location filename="../src/lgtv.cpp" line="654"/>
+        <source>the TV does not state whether it is running - the device list cannot tell on from standby</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/lgtv.cpp" line="728"/>
-        <source>Volume</source>
+        <source>volume</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/lgtv.cpp" line="729"/>
-        <source>%1 of %2</source>
+        <source>key channel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lgtv.cpp" line="730"/>
+        <source>app list</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/lgtv.cpp" line="731"/>
-        <source>Muted</source>
+        <source>input list</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/lgtv.cpp" line="732"/>
-        <location filename="../src/lgtv.cpp" line="734"/>
-        <location filename="../src/lgtv.cpp" line="736"/>
-        <source>no</source>
+        <source>system data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/lgtv.cpp" line="733"/>
-        <source>External control</source>
+        <source>network data (MAC address)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lgtv.cpp" line="734"/>
+        <source>sound settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/lgtv.cpp" line="735"/>
+        <source>channel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lgtv.cpp" line="737"/>
+        <source>remote keyboard</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lgtv.cpp" line="738"/>
+        <source>text entry</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lgtv.cpp" line="739"/>
+        <source>app state</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lgtv.cpp" line="740"/>
+        <source>sign of life</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lgtv.cpp" line="741"/>
+        <source>screenshot</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lgtv.cpp" line="744"/>
+        <source>command</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lgtv.cpp" line="766"/>
+        <source>Command not sent</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lgtv.cpp" line="767"/>
+        <source>not signed on to the TV</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lgtv.cpp" line="795"/>
+        <source>the TV answered without an address for the key channel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lgtv.cpp" line="867"/>
+        <location filename="../src/lgtv.cpp" line="1120"/>
+        <source>Text entry</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lgtv.cpp" line="867"/>
+        <source>the TV rejected the text</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lgtv.cpp" line="869"/>
+        <source>insertText: accepted</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lgtv.cpp" line="870"/>
+        <source>insertText rejected: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lgtv.cpp" line="919"/>
+        <source>Screenshot</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lgtv.cpp" line="920"/>
+        <source>the TV took the order but names no image</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lgtv.cpp" line="921"/>
+        <source>no screenshot from the TV</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lgtv.cpp" line="953"/>
+        <source>Model</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lgtv.cpp" line="954"/>
+        <source>Serial number</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lgtv.cpp" line="1060"/>
+        <source>Key</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lgtv.cpp" line="1060"/>
+        <source>key channel not open - keystroke discarded</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lgtv.cpp" line="1098"/>
+        <source>Pointer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lgtv.cpp" line="1098"/>
+        <source>key channel not open - click discarded</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lgtv.cpp" line="1121"/>
+        <source>no input field focused on the TV - the text may be discarded</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lgtv.cpp" line="1381"/>
+        <source>asked three times without success - enter the MAC by hand under Connected devices</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lgtv.cpp" line="972"/>
+        <source>MAC wired</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lgtv.cpp" line="972"/>
+        <source>MAC Wi-Fi</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lgtv.cpp" line="973"/>
+        <source>MAC direct link</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lgtv.cpp" line="985"/>
+        <source> - IP</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lgtv.cpp" line="1025"/>
+        <location filename="../src/lgtv.cpp" line="1380"/>
+        <source>MAC address</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lgtv.cpp" line="1026"/>
+        <source>the TV answered without a MAC address - no wake-on-LAN possible</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lgtv.cpp" line="1036"/>
+        <source>Sound output</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lgtv.cpp" line="1037"/>
+        <source>Volume</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lgtv.cpp" line="1038"/>
+        <source>%1 of %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lgtv.cpp" line="1044"/>
+        <location filename="../src/lgtv.cpp" line="1046"/>
+        <source>no</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lgtv.cpp" line="1043"/>
+        <source>External control</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lgtv.cpp" line="1041"/>
+        <source>Mute</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lgtv.cpp" line="1042"/>
+        <source>on</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lgtv.cpp" line="1042"/>
+        <source>off</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lgtv.cpp" line="1045"/>
         <source>Volume adjustable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="742"/>
-        <source>Firmware</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/lgtv.cpp" line="745"/>
-        <source>Product</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/lgtv.cpp" line="980"/>
+        <location filename="../src/lgtv.cpp" line="1309"/>
         <source>YouTube: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -464,43 +1072,28 @@ The keys run over a second channel whose address the TV only hands out on reques
 <context>
     <name>MainMenu</name>
     <message>
-        <location filename="../qml/pages/MainMenu.qml" line="11"/>
+        <location filename="../qml/pages/MainMenu.qml" line="15"/>
+        <source>Connected devices</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/MainMenu.qml" line="20"/>
         <source>Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenu.qml" line="16"/>
-        <source>Devices</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/MainMenu.qml" line="21"/>
+        <location filename="../qml/pages/MainMenu.qml" line="31"/>
         <source>Apps and inputs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenu.qml" line="26"/>
-        <source>Screenshot of the TV</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/MainMenu.qml" line="31"/>
+        <location filename="../qml/pages/MainMenu.qml" line="25"/>
         <source>System data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenu.qml" line="37"/>
+        <location filename="../qml/pages/MainMenu.qml" line="11"/>
         <source>About</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/MainMenu.qml" line="41"/>
-        <source>Disconnect</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/MainMenu.qml" line="41"/>
-        <source>Connect</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -512,47 +1105,52 @@ The keys run over a second channel whose address the TV only hands out on reques
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PanelMain.qml" line="128"/>
+        <location filename="../qml/pages/PanelMain.qml" line="132"/>
         <source>switched off</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PanelMain.qml" line="144"/>
+        <location filename="../qml/pages/PanelMain.qml" line="149"/>
         <source>wake-up signal sent</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PanelMain.qml" line="145"/>
+        <location filename="../qml/pages/PanelMain.qml" line="151"/>
+        <source>no MAC address stored - see the error log</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PanelMain.qml" line="152"/>
         <source>invalid MAC address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PanelMain.qml" line="186"/>
+        <location filename="../qml/pages/PanelMain.qml" line="193"/>
         <source>Back</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PanelMain.qml" line="190"/>
+        <location filename="../qml/pages/PanelMain.qml" line="197"/>
         <source>Info</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PanelMain.qml" line="208"/>
+        <location filename="../qml/pages/PanelMain.qml" line="218"/>
         <source>Input</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PanelMain.qml" line="214"/>
+        <location filename="../qml/pages/PanelMain.qml" line="224"/>
         <source>Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PanelMain.qml" line="230"/>
+        <location filename="../qml/pages/PanelMain.qml" line="240"/>
         <source>Sound</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PanelMain.qml" line="247"/>
+        <location filename="../qml/pages/PanelMain.qml" line="257"/>
         <source>Channel</source>
         <translation type="unfinished"></translation>
     </message>
@@ -560,37 +1158,32 @@ The keys run over a second channel whose address the TV only hands out on reques
 <context>
     <name>PanelPad</name>
     <message>
-        <location filename="../qml/pages/PanelPad.qml" line="23"/>
+        <location filename="../qml/pages/PanelPad.qml" line="56"/>
         <source>Show keyboard</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PanelPad.qml" line="39"/>
+        <location filename="../qml/pages/PanelPad.qml" line="76"/>
         <source>◀   swipe here to change page   ▶</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PanelPad.qml" line="75"/>
+        <location filename="../qml/pages/PanelPad.qml" line="116"/>
         <source>not connected</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PanelPad.qml" line="223"/>
-        <source>no text field open on the TV</source>
+        <location filename="../qml/pages/PanelPad.qml" line="277"/>
+        <source>no text field on the TV - use the magnifier for YouTube</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PanelPad.qml" line="249"/>
-        <source>search on YouTube</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/PanelPad.qml" line="251"/>
+        <location filename="../qml/pages/PanelPad.qml" line="310"/>
         <source>opening keyboard on the TV ...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PanelPad.qml" line="252"/>
+        <location filename="../qml/pages/PanelPad.qml" line="311"/>
         <source>text to the TV</source>
         <translation type="unfinished"></translation>
     </message>
@@ -697,162 +1290,157 @@ The keys run over a second channel whose address the TV only hands out on reques
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="85"/>
-        <location filename="../qml/pages/SettingsPage.qml" line="167"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="160"/>
         <source>not stored</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="89"/>
-        <source>Manage devices</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="100"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="93"/>
         <source>Wake-on-LAN has to be enabled on the TV: Settings → General → External devices → Turn on via mobile device.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="105"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="98"/>
         <source>Match the volume</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="113"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="106"/>
         <source>With the sound on an external device over ARC, the TV keeps a counter of its own that has nothing to do with the real level - the amplifier never reports back. Enter what the device shows and the display follows along.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="124"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="117"/>
         <source>Level on the audio device</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="135"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="128"/>
         <source>Set</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="150"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="143"/>
         <source>Pairing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="159"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="152"/>
         <source>Paired. The TV no longer asks.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="160"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="153"/>
         <source>Not paired yet. Connecting brings up a prompt on the TV.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="164"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="157"/>
         <source>Certificate</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="172"/>
-        <source>Reset pairing</source>
+        <location filename="../qml/pages/SettingsPage.qml" line="171"/>
+        <source>A pairing belongs to one television. Releasing it is therefore done in the device list: hold the entry, then Reset pairing.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="183"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="176"/>
         <source>Try a key code</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="191"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="184"/>
         <source>The TV accepts about 450 key names and silently drops invalid ones. Try one here without rebuilding the app - QMENU, MYAPPS, RECENT, LIST, SIMPLINK, GUIDE or SCREEN_REMOTE for instance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="202"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="195"/>
         <source>e.g. INPUT</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="203"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="196"/>
         <source>Key name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="213"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="206"/>
         <source>Send</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="226"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="219"/>
         <source>State</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="228"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="221"/>
         <source>Connection</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="228"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="221"/>
         <source>open</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="228"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="221"/>
         <source>closed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="229"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="222"/>
         <source>Paired</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="229"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="222"/>
         <source>yes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="229"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="222"/>
         <source>no</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="230"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="223"/>
         <source>Key channel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="230"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="223"/>
         <source>ready</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="231"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="224"/>
         <source>not ready</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="232"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="225"/>
         <source>Message</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="233"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="226"/>
         <source>Text field on the TV</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="235"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="228"/>
         <source>ready (%1, %2 characters)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="237"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="230"/>
         <source>no field open</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="239"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="232"/>
         <source>Diagnostics</source>
         <translation type="unfinished"></translation>
     </message>
@@ -860,57 +1448,119 @@ The keys run over a second channel whose address the TV only hands out on reques
 <context>
     <name>SystemPage</name>
     <message>
-        <location filename="../qml/pages/SystemPage.qml" line="27"/>
+        <location filename="../qml/pages/SystemPage.qml" line="18"/>
+        <location filename="../qml/pages/SystemPage.qml" line="86"/>
+        <location filename="../qml/pages/SystemPage.qml" line="92"/>
+        <location filename="../qml/pages/SystemPage.qml" line="105"/>
+        <location filename="../qml/pages/SystemPage.qml" line="108"/>
         <source>Device</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SystemPage.qml" line="28"/>
-        <source>Address</source>
+        <location filename="../qml/pages/SystemPage.qml" line="62"/>
+        <source>not stated</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SystemPage.qml" line="31"/>
-        <source>State</source>
+        <location filename="../qml/pages/SystemPage.qml" line="63"/>
+        <source>on</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SystemPage.qml" line="31"/>
-        <source>not connected</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/SystemPage.qml" line="49"/>
-        <source>Network</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/SystemPage.qml" line="53"/>
-        <source>Sound and ARC</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/SystemPage.qml" line="57"/>
-        <source>Inputs</source>
+        <location filename="../qml/pages/SystemPage.qml" line="64"/>
+        <source>on, screen dark</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../qml/pages/SystemPage.qml" line="66"/>
+        <source>standby</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SystemPage.qml" line="83"/>
+        <source>Address</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SystemPage.qml" line="86"/>
+        <source>State</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SystemPage.qml" line="87"/>
+        <source>not connected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SystemPage.qml" line="18"/>
+        <location filename="../qml/pages/SystemPage.qml" line="83"/>
+        <location filename="../qml/pages/SystemPage.qml" line="110"/>
+        <location filename="../qml/pages/SystemPage.qml" line="113"/>
+        <source>Network</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SystemPage.qml" line="19"/>
+        <location filename="../qml/pages/SystemPage.qml" line="111"/>
+        <source>Sound and ARC</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SystemPage.qml" line="20"/>
+        <location filename="../qml/pages/SystemPage.qml" line="109"/>
+        <location filename="../qml/pages/SystemPage.qml" line="117"/>
+        <source>Inputs</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SystemPage.qml" line="19"/>
+        <location filename="../qml/pages/SystemPage.qml" line="123"/>
         <source>Open ports</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SystemPage.qml" line="67"/>
+        <location filename="../qml/pages/SystemPage.qml" line="87"/>
+        <source>connecting ...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SystemPage.qml" line="92"/>
+        <location filename="../qml/pages/SystemPage.qml" line="105"/>
+        <source>Power state</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SystemPage.qml" line="109"/>
+        <source>Tuner</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SystemPage.qml" line="113"/>
+        <source>Encryption</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SystemPage.qml" line="124"/>
         <source>open</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SystemPage.qml" line="81"/>
+        <location filename="../qml/pages/SystemPage.qml" line="135"/>
         <source>System data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SystemPage.qml" line="85"/>
+        <location filename="../qml/pages/SystemPage.qml" line="139"/>
+        <source>Error log (%1)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SystemPage.qml" line="140"/>
+        <source>Error log - empty</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SystemPage.qml" line="144"/>
         <source>Reload</source>
         <translation type="unfinished"></translation>
     </message>
@@ -918,25 +1568,154 @@ The keys run over a second channel whose address the TV only hands out on reques
 <context>
     <name>TvIcons</name>
     <message>
-        <location filename="../src/tvicons.cpp" line="150"/>
+        <location filename="../src/tvicons.cpp" line="47"/>
+        <location filename="../src/tvicons.cpp" line="84"/>
+        <location filename="../src/tvicons.cpp" line="136"/>
+        <location filename="../src/tvicons.cpp" line="141"/>
+        <source>Icon</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/tvicons.cpp" line="48"/>
+        <source>no certificate remembered yet - connect to the TV once, then the icons will load</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/tvicons.cpp" line="84"/>
+        <source>not fetched from the TV after three tries</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/tvicons.cpp" line="137"/>
+        <source>the TV shows a different certificate than the one remembered</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/tvicons.cpp" line="141"/>
+        <source>TLS error without a certificate to check</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/tvicons.cpp" line="166"/>
+        <location filename="../src/tvicons.cpp" line="177"/>
+        <source>Screenshot</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/tvicons.cpp" line="166"/>
+        <source>not fetched from the TV</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/tvicons.cpp" line="172"/>
         <source>Screenshot not fetched</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/tvicons.cpp" line="156"/>
+        <location filename="../src/tvicons.cpp" line="177"/>
+        <source>could not be written to the gallery</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/tvicons.cpp" line="179"/>
         <source>Screenshot not saved</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/tvicons.cpp" line="201"/>
+        <location filename="../src/tvicons.cpp" line="215"/>
+        <location filename="../src/tvicons.cpp" line="220"/>
+        <source>Tile</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/tvicons.cpp" line="202"/>
+        <source>icon not fetched: no certificate of the TV remembered yet</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/tvicons.cpp" line="215"/>
+        <source>icon not fetched from the TV</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/tvicons.cpp" line="220"/>
+        <source>icon could not be cached</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>Wol</name>
+    <message>
+        <location filename="../src/wol.cpp" line="20"/>
+        <location filename="../src/wol.cpp" line="37"/>
+        <location filename="../src/wol.cpp" line="47"/>
+        <location filename="../src/wol.cpp" line="57"/>
+        <location filename="../src/wol.cpp" line="99"/>
+        <source>Wake-on-LAN</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/wol.cpp" line="21"/>
+        <location filename="../src/wol.cpp" line="38"/>
+        <source>no MAC address stored for this device - the TV only names it while connected, or enter it by hand</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/wol.cpp" line="48"/>
+        <source>the stored MAC address does not have twelve hex digits</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/wol.cpp" line="58"/>
+        <source>the stored MAC address contains characters that are not hex digits</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/wol.cpp" line="100"/>
+        <source>the magic packet could not be sent - no network on the phone?</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>harbour-lgremote</name>
     <message>
-        <location filename="../qml/harbour-lgremote.qml" line="64"/>
+        <location filename="../qml/harbour-lgremote.qml" line="77"/>
+        <source>Devices</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/harbour-lgremote.qml" line="77"/>
+        <source>the stored device list is unreadable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/harbour-lgremote.qml" line="84"/>
         <source>Television</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/harbour-lgremote.qml" line="193"/>
+        <location filename="../qml/harbour-lgremote.qml" line="117"/>
+        <source>Tiles</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/harbour-lgremote.qml" line="117"/>
+        <source>the stored tiles are unreadable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/harbour-lgremote.qml" line="145"/>
+        <source>Tile</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/harbour-lgremote.qml" line="145"/>
+        <source>the TV names no icon for this entry</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/harbour-lgremote.qml" line="270"/>
         <source>Screenshot saved: %1</source>
         <translation type="unfinished"></translation>
     </message>

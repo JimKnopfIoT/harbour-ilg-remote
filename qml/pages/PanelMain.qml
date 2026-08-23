@@ -64,11 +64,15 @@ Item {
 
                     property bool longPressed: false
 
-                    // Zustand in der Farbe: gruen verbunden, rot getrennt,
-                    // orange blinkend waehrend des Aufbaus
+                    /* Zustand in der Farbe: gruen an, orange in Bereitschaft
+                       oder im Aufbau (dann blinkend), rot keine Verbindung.
+                       Nennt der Fernseher seinen Einschaltzustand nicht, bleibt
+                       es beim alten Bild - lieber gruen als falsch orange. */
                     property bool searching: !panel.tv.registered
                                              && (panel.tv.linkUp || reconnect.running)
-                    property color stateColor: panel.tv.registered ? "#4caf50"
+                    property color stateColor: panel.tv.registered
+                                             ? (panel.tv.powerUnknown || panel.tv.awake
+                                                ? "#4caf50" : "#ff9800")
                                              : searching ? "#ff9800" : "#e53935"
 
                     Rectangle {
@@ -140,9 +144,12 @@ Item {
                             hold.stop(); fillAnim.stop(); fill.progress = 0
                             if (!power.longPressed) {
                                 // Kurz tippen weckt den Fernseher
-                                var ok = Wol.wake(panel.window.mac, panel.window.host)
+                                var ok = Wol.wakeAll(panel.window.macList,
+                                                     panel.window.host)
                                 panel.tv.note(ok ? qsTr("wake-up signal sent")
-                                                 : qsTr("invalid MAC address"))
+                                              : panel.window.macList.length === 0
+                                                ? qsTr("no MAC address stored - see the error log")
+                                                : qsTr("invalid MAC address"))
                                 if (ok) reconnect.start()
                             }
                         }
@@ -193,11 +200,14 @@ Item {
 
             // ---------- Guide, Geräte, Einstellungen ----------
 
+            /* Guide, Eingang und Zahnrad gehen ueber den Tastenkanal, nicht
+               ueber den Hauptkanal. Angemeldet allein genuegt also nicht -
+               sonst sehen die Tasten bedienbar aus und der Druck verfaellt. */
             Row {
                 anchors.horizontalCenter: parent.horizontalCenter
                 spacing: Theme.paddingLarge
-                enabled: panel.tv.registered
-                opacity: panel.tv.registered ? 1.0 : 0.3
+                enabled: panel.tv.pointerReady
+                opacity: panel.tv.pointerReady ? 1.0 : 0.3
 
                 IconKey { icon: "icon-m-events"; label: "Guide"
                           onPressed: panel.tv.button("GUIDE") }

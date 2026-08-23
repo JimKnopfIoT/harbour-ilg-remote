@@ -28,6 +28,39 @@ const QVector<Known> kPorts = {
 
 PortScan::PortScan(QObject *parent) : QObject(parent) {}
 
+/* Nur der eine Port, nur eine Sekunde: die Liste soll zuegig ein Bild geben.
+   Ein Fernseher im Bereitschaftsbetrieb nimmt hier nichts an - genau das ist
+   die Aussage "offline". */
+void PortScan::probe(const QString &host)
+{
+    if (host.isEmpty())
+        return;
+
+    QTcpSocket *sock = new QTcpSocket(this);
+    QTimer *timer = new QTimer(this);
+    timer->setSingleShot(true);
+    timer->setInterval(1200);
+
+    auto report = [this, sock, timer, host](bool up) {
+        if (sock->property("done").toBool())
+            return;
+        sock->setProperty("done", true);
+        timer->stop();
+        emit reachable(host, up);
+        sock->abort();
+        sock->deleteLater();
+        timer->deleteLater();
+    };
+
+    connect(sock, &QTcpSocket::connected, this, [report]() { report(true); });
+    connect(sock, static_cast<void (QAbstractSocket::*)(QAbstractSocket::SocketError)>(&QAbstractSocket::error),
+            this, [report](QAbstractSocket::SocketError) { report(false); });
+    connect(timer, &QTimer::timeout, this, [report]() { report(false); });
+
+    timer->start();
+    sock->connectToHost(host, quint16(3001));
+}
+
 void PortScan::scan(const QString &host)
 {
     if (host.isEmpty())

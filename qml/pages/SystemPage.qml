@@ -47,26 +47,51 @@ Page {
         rows.insert(ende, { "kind": "row", "k": k, "v": String(v) })
     }
 
+    /* Setzt eine Zeile, statt sie ein zweites Mal anzulegen - der
+       Einschaltzustand aendert sich, waehrend die Seite offen ist. */
+    function setRow(section, k, v) {
+        for (var i = 0; i < rows.count; i++) {
+            var r = rows.get(i)
+            if (r.kind === "row" && r.k === k) { rows.setProperty(i, "v", String(v)); return }
+        }
+        addRowTop(section, k, v)
+    }
+
+    function powerText() {
+        var z = panel.tv.powerState
+        if (z.length === 0) return qsTr("not stated")
+        if (z === "Active") return qsTr("on")
+        if (z === "Screen Off" || z === "Screen Saver") return qsTr("on, screen dark")
+        // Active Standby, Suspend, Power Off
+        return qsTr("standby") + "  (" + z + ")"
+    }
+
     function addMap(section, map) {
         for (var key in map) addRow(section, key, map[key])
     }
 
+    /* Wer die Seite bei schlafendem Fernseher oeffnet, soll sie nicht leer
+       behalten: sobald die Anmeldung steht, wird nachgeladen. */
+    property bool geladen: false
+
     function reload() {
         rows.clear()
         busy.running = true
+        geladen = panel.tv.registered
 
         // Die Adresse gehoert zum Netz, nicht zum Geraet
         addRow(qsTr("Network"), qsTr("Address"), panel.tv.host)
 
         if (!panel.tv.registered) {
-            addRow(qsTr("Device"), qsTr("State"), qsTr("not connected"))
+            addRow(qsTr("Device"), qsTr("State"),
+                   panel.tv.linkUp ? qsTr("connecting ...") : qsTr("not connected"))
             busy.running = false
             return
         }
 
+        setRow(qsTr("Device"), qsTr("Power state"), powerText())
         panel.tv.requestTlsInfo()
         panel.tv.requestSystemInfo()
-        panel.tv.requestSoftwareInfo()
         panel.tv.requestNetworkInfo()
         panel.tv.requestAudioStatus()
         panel.tv.requestInputs()
@@ -75,10 +100,13 @@ Page {
 
     Connections {
         target: tv
+        onStateChanged: if (panel.tv.registered && !panel.geladen) panel.reload()
+        onPowerStateChanged: if (panel.geladen)
+                                 panel.setRow(qsTr("Device"), qsTr("Power state"),
+                                              panel.powerText())
         // Modell, Seriennummer, Tuner und die Firmware beschreiben das Geraet
         onSystemInfoReceived: panel.addMap(qsTr("Device"), info)
         onTunerReceived: panel.addRowTop(qsTr("Inputs"), qsTr("Tuner"), type)
-        onSoftwareInfoReceived: panel.addMap(qsTr("Device"), info)
         onNetworkInfoReceived: panel.addMap(qsTr("Network"), info)
         onAudioStatusReceived: panel.addMap(qsTr("Sound and ARC"), info)
         // Kommt zuletzt und steht damit unten im Abschnitt Netzwerk
@@ -107,6 +135,11 @@ Page {
         header: PageHeader { title: qsTr("System data") }
 
         PullDownMenu {
+            MenuItem {
+                text: errorLog.count > 0 ? qsTr("Error log (%1)").arg(errorLog.count)
+                                         : qsTr("Error log - empty")
+                onClicked: pageStack.push(Qt.resolvedUrl("ErrorLogPage.qml"))
+            }
             MenuItem {
                 text: qsTr("Reload")
                 onClicked: panel.reload()

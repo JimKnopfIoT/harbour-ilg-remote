@@ -6,6 +6,7 @@
 #include <sailfishapp.h>
 
 #include "discovery.h"
+#include "errorlog.h"
 #include "lgtv.h"
 #include "portscan.h"
 #include "tvicons.h"
@@ -18,6 +19,10 @@ int main(int argc, char *argv[])
     qmlRegisterType<LgTv>("harbour.lgremote", 1, 0, "LgTv");
 
     QScopedPointer<QQuickView> view(SailfishApp::createView());
+
+    /* Das Fehlerprotokoll steht ueberall zur Verfuegung und ist im Normalfall
+       leer - jeder Eintrag ist eine Zusage, die nicht eingehalten wurde. */
+    view->rootContext()->setContextProperty(QStringLiteral("errorLog"), ErrorLog::instance());
 
     // Die Engine uebernimmt den Anbieter, die Zeigerkopie bleibt fuer QML
     TvIcons *icons = new TvIcons;

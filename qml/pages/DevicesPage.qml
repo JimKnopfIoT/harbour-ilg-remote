@@ -13,8 +13,39 @@ Page {
 
     ListModel { id: foundModel }
 
+    /* Erreichbarkeit je Adresse: "" unbekannt, "an" nimmt Verbindungen an,
+       "aus" antwortet nicht. Ein Fernseher im Bereitschaftsbetrieb steht
+       weiter in der Liste - er ist ja nicht verschwunden, nur still. */
+    property var reachable: ({})
+    // Auskunft nach einem Tipp auf ein stilles Geraet
+    property string hinweis: ""
+
+    function refreshState() {
+        hinweis = ""
+        var m = {}
+        for (var i = 0; i < window.devices.length; i++) {
+            var h = window.devices[i].host
+            if (!h || h.length === 0) continue
+            m[h] = ""
+            scanner.probe(h)
+        }
+        reachable = m
+    }
+
+    Connections {
+        target: scanner
+        onReachable: {
+            var m = page.reachable
+            m[host] = up ? "an" : "aus"
+            page.reachable = m
+        }
+    }
+
     // Modell und Seriennummer nachfragen, sonst bleiben sie leer
-    Component.onCompleted: if (tv.registered) tv.requestSystemInfo()
+    Component.onCompleted: {
+        if (tv.registered) tv.requestSystemInfo()
+        refreshState()
+    }
 
     property bool searched: false
 
@@ -49,6 +80,16 @@ Page {
                 text: qsTr("Tapping switches to the device. The pairing key is stored per device, so switching needs no new confirmation.")
             }
 
+            Label {
+                x: Theme.horizontalPageMargin
+                width: parent.width - 2 * Theme.horizontalPageMargin
+                visible: page.hinweis.length > 0
+                wrapMode: Text.Wrap
+                font.pixelSize: Theme.fontSizeExtraSmall
+                color: Theme.secondaryHighlightColor
+                text: page.hinweis
+            }
+
             Item { width: 1; height: Theme.paddingLarge }
         }
 
@@ -62,6 +103,10 @@ Page {
                 text: discovery.running ? qsTr("Searching ...") : qsTr("Search the network")
                 enabled: !discovery.running
                 onClicked: { foundModel.clear(); page.searched = true; discovery.start() }
+            }
+            MenuItem {
+                text: qsTr("Check availability")
+                onClicked: page.refreshState()
             }
             MenuItem {
                 text: qsTr("Add device manually")
@@ -80,16 +125,44 @@ Page {
             // Modell und Seriennummer kennt nur der Fernseher, an dem wir haengen
             property bool aktiv: index === page.window.currentIndex && page.tv.registered
 
+            /* Der Anschluss auf Port 3001 antwortet auch im Netzwerk-Standby.
+               "erreichbar" ist deshalb nur die halbe Auskunft: an ist der
+               Fernseher erst, wenn er es selbst sagt - und das sagt er nur dem,
+               mit dem er verbunden ist. */
+            property string erreichbar: (dev && dev.host && page.reachable[dev.host])
+                                        ? page.reachable[dev.host] : ""
+            /* Nennt der Fernseher seinen Zustand nicht, gilt wie beim
+               Ein-/Aus-Knopf das alte Bild: verbunden heisst an. Lieber die
+               gewohnte Auskunft als eine erfundene Bereitschaft. */
+            property string zustand: erreichbar === "" ? ""
+                                   : erreichbar === "aus" ? "aus"
+                                   : !aktiv ? "erreichbar"
+                                   : page.tv.powerUnknown ? "an"
+                                   : page.tv.awake ? "an" : "standby"
+
+            /* Der erste Eintrag ist leer und tut nichts: wer das Menue
+               oeffnet und den Finger hebt, soll nicht versehentlich eine
+               Kopplung loesen. */
             menu: ContextMenu {
+                MenuItem { text: "" }
                 MenuItem {
                     text: qsTr("Edit")
                     onClicked: pageStack.push(Qt.resolvedUrl("DeviceEditPage.qml"),
                                               { window: page.window, index: index })
                 }
                 MenuItem {
-                    text: qsTr("Remove")
-                    enabled: page.window.devices.length > 1
-                    onClicked: page.window.removeDevice(index)
+                    text: qsTr("Reset pairing")
+                    enabled: item.dev && ((item.dev.key && item.dev.key.length > 0)
+                                          || (item.dev.cert && item.dev.cert.length > 0))
+                    onClicked: {
+                        page.window.resetPairing(index)
+                        page.hinweis = qsTr("Pairing released. Tapping the device connects again - the TV then asks once more.")
+                    }
+                }
+                MenuItem {
+                    text: qsTr("Forget device")
+                    onClicked: remorseAction(qsTr("Forgetting"),
+                                             function () { page.window.removeDevice(index) })
                 }
             }
 
@@ -99,11 +172,37 @@ Page {
                 width: parent.width - 2 * Theme.horizontalPageMargin
                 anchors.verticalCenter: parent.verticalCenter
 
-                Label {
-                    text: item.dev ? item.dev.name : ""
-                    color: index === page.window.currentIndex ? Theme.highlightColor
-                                                              : Theme.primaryColor
-                    truncationMode: TruncationMode.Fade
+                Row {
+                    spacing: Theme.paddingSmall
+
+                    Rectangle {
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: Theme.fontSizeSmall / 2
+                        height: width
+                        radius: width / 2
+                        color: item.zustand === "an" ? "#4caf50"
+                             : item.zustand === "aus" ? "#e53935"
+                             : item.zustand === "" ? Theme.rgba(Theme.primaryColor, 0.3)
+                                                   : "#ff9800"
+                    }
+
+                    Label {
+                        id: nameLabel
+                        text: item.dev ? item.dev.name : ""
+                        color: index === page.window.currentIndex ? Theme.highlightColor
+                                                                  : Theme.primaryColor
+                        truncationMode: TruncationMode.Fade
+                    }
+
+                    Label {
+                        anchors.baseline: nameLabel.baseline
+                        text: item.zustand === "an" ? qsTr("on")
+                            : item.zustand === "standby" ? qsTr("standby · reachable")
+                            : item.zustand === "erreichbar" ? qsTr("reachable")
+                            : item.zustand === "aus" ? qsTr("off") : ""
+                        font.pixelSize: Theme.fontSizeExtraSmall
+                        color: Theme.secondaryColor
+                    }
                 }
                 Label {
                     visible: item.aktiv && page.tv.model.length > 0
@@ -124,8 +223,20 @@ Page {
             }
 
             onClicked: {
+                /* Ausgewaehlt wird trotzdem - nur so zielt das Weckpaket auf
+                   dieses Geraet. Aber wortlos auf die Fernbedienung springen,
+                   wo dann nichts geht, waere die schlechtere Auskunft. */
                 page.window.selectDevice(index)
-                pageStack.pop()
+                if (item.zustand === "aus") {
+                    page.tv.note(qsTr("Not available, offline"))
+                    page.hinweis = qsTr("%1 does not answer. It is disconnected from the mains or network standby is switched off - the power key on the first page sends the wake-up signal anyway.").arg(item.dev.name)
+                    return
+                }
+                /* Tippen fuehrt zu den Systemdaten des Geraets, nicht zur
+                   Fernbedienung: hier steht, woran man ist. Zur Fernbedienung
+                   kommt man mit dem Zurueckwischen. */
+                pageStack.push(Qt.resolvedUrl("SystemPage.qml"),
+                               { tv: page.tv, window: page.window })
             }
         }
 

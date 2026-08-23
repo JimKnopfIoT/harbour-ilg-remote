@@ -6,6 +6,7 @@ QT += network websockets
 SOURCES += \
     src/harbour-lgremote.cpp \
     src/discovery.cpp \
+    src/errorlog.cpp \
     src/lgtv.cpp \
     src/portscan.cpp \
     src/tvicons.cpp \
@@ -13,6 +14,7 @@ SOURCES += \
 
 HEADERS += \
     src/discovery.h \
+    src/errorlog.h \
     src/lgtv.h \
     src/portscan.h \
     src/tvicons.h \
@@ -35,6 +37,8 @@ DISTFILES += \
     qml/pages/PanelPad.qml \
     qml/pages/SystemPage.qml \
     qml/pages/AboutPage.qml \
+    qml/pages/GlossaryPage.qml \
+    qml/pages/ErrorLogPage.qml \
     qml/pages/AppsPage.qml \
     qml/pages/DevicesPage.qml \
     qml/pages/DeviceEditPage.qml \

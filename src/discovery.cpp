@@ -1,11 +1,15 @@
 #include "discovery.h"
 
+#include "errorlog.h"
+
 #include <QHostAddress>
 #include <QNetworkAccessManager>
 #include <QNetworkInterface>
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QRegularExpression>
+#include <QStringList>
+#include <QVector>
 #include <QTcpSocket>
 #include <QTimer>
 #include <QUdpSocket>
@@ -42,19 +46,38 @@ bool usable(const QNetworkInterface &i)
            && !f.testFlag(QNetworkInterface::IsLoopBack);
 }
 
-// Eigene Adresse im lokalen Netz - Ausgangspunkt fuer das Abklopfen
-QHostAddress localAddress()
+struct Netz {
+    quint32 addr;
+    quint32 mask;
+    QString name;
+};
+
+/* Alle eigenen Netze, nicht nur das erste. Die Reihenfolge der Schnittstellen
+   ist beliebig: bei aktivem Mobilfunk stand die Funkstrecke womoeglich vorn,
+   und dann wurde das falsche Netz abgeklopft - das Wohnzimmer liegt nicht
+   hinter dem Mobilfunk. Ohne Hardwareadresse ist es keine Netzwerkkarte,
+   sondern genau so eine Strecke. */
+QVector<Netz> localNets()
 {
+    QVector<Netz> out;
     for (const QNetworkInterface &i : QNetworkInterface::allInterfaces()) {
-        if (!usable(i))
+        if (!usable(i) || i.hardwareAddress().isEmpty())
             continue;
         for (const QNetworkAddressEntry &e : i.addressEntries()) {
             const QHostAddress a = e.ip();
-            if (a.protocol() == QAbstractSocket::IPv4Protocol && !a.isLoopback())
-                return a;
+            if (a.protocol() != QAbstractSocket::IPv4Protocol || a.isLoopback())
+                continue;
+            // Ohne Maske die uebliche Annahme /24
+            const quint32 mask = e.netmask().isNull() ? 0xFFFFFF00u
+                                                      : e.netmask().toIPv4Address();
+            Netz z;
+            z.addr = a.toIPv4Address();
+            z.mask = mask;
+            z.name = i.humanReadableName();
+            out.append(z);
         }
     }
-    return QHostAddress();
+    return out;
 }
 
 } // namespace
@@ -75,10 +98,12 @@ Discovery::Discovery(QObject *parent) : QObject(parent)
     connect(m_deadline, &QTimer::timeout, this, [this]() {
         m_repeat->stop();
         closeSocket();
-        if (m_seen.isEmpty())
-            sweep();
-        else
-            setRunning(false);
+        /* Immer abklopfen, nicht nur wenn gar nichts kam. Auf die
+           Multicast-Anfrage antworten auch fremde Geraete - ein NAS, ein
+           Medienserver -, und ein Fernseher, der die Anfrage verschluckt,
+           fiel dann unter den Tisch: die Suche galt als erfolgreich, nur
+           eben ohne ihn. */
+        sweep();
     });
 }
 
@@ -91,6 +116,8 @@ void Discovery::start()
     m_socket = new QUdpSocket(this);
     if (!m_socket->bind(QHostAddress(QHostAddress::AnyIPv4), 0,
                         QUdpSocket::ShareAddress | QUdpSocket::ReuseAddressHint)) {
+        ErrorLog::note(tr("Search"), tr("no UDP socket for the search - is the phone on a network?"),
+                       m_socket->errorString());
         closeSocket();
         return;
     }
@@ -119,9 +146,15 @@ void Discovery::sendSearch()
         for (const QString &t : kTargets)
             sent = m_socket->writeDatagram(searchRequest(t), group, kSsdpPort) > 0 || sent;
     }
-    if (!sent)
+    if (!sent) {
+        /* Keine Schnittstelle wollte das Multicast nehmen - der Versuch ueber
+           die Vorgaberoute ist dann alles, was bleibt. */
+        ErrorLog::note(tr("Search"),
+                       tr("no interface accepted the multicast - trying the default route"),
+                       QString());
         for (const QString &t : kTargets)
             m_socket->writeDatagram(searchRequest(t), group, kSsdpPort);
+    }
 }
 
 void Discovery::closeSocket()
@@ -150,27 +183,48 @@ void Discovery::stop()
    abklopfen. Nur dieser eine Port, nur das eigene Netz. */
 void Discovery::sweep()
 {
-    const QHostAddress own = localAddress();
-    if (own.isNull()) {
+    const QVector<Netz> netze = localNets();
+    if (netze.isEmpty()) {
+        ErrorLog::note(tr("Search"),
+                       tr("no address of our own in the local network - search not possible"),
+                       QString());
         setRunning(false);
         return;
     }
 
-    const quint32 net = own.toIPv4Address() & 0xFFFFFF00u;
-    for (quint32 h = 1; h < 255; ++h) {
-        const QHostAddress addr{net | h};
-        if (addr == own)
+    QStringList beklopft;
+    for (const Netz &z : netze) {
+        const quint32 anzahl = ~z.mask;             // hoechste Hausnummer
+        /* Ein sehr weites Netz waere hunderte Verbindungen - dafuer ist das
+           hier nicht gedacht, und der Nutzer kann die Adresse eintragen. */
+        if (anzahl < 3 || anzahl > 1022) {
+            ErrorLog::note(tr("Search"),
+                           tr("network too large to scan - add the TV by hand"),
+                           z.name);
             continue;
-        const QString host = addr.toString();
+        }
+        beklopft << z.name + QStringLiteral(" ")
+                    + QHostAddress(z.addr & z.mask).toString();
 
-        QTcpSocket *s = new QTcpSocket(this);
-        ++m_probes;
-        connect(s, &QTcpSocket::connected, this, [this, s, host]() { probeDone(s, host, true); });
-        connect(s, static_cast<void (QAbstractSocket::*)(QAbstractSocket::SocketError)>(&QAbstractSocket::error),
-                this, [this, s, host](QAbstractSocket::SocketError) { probeDone(s, host, false); });
-        QTimer::singleShot(2500, s, [this, s, host]() { probeDone(s, host, false); });
-        s->connectToHost(host, kSsapPort);
+        for (quint32 h = 1; h < anzahl; ++h) {
+            const quint32 ziel = (z.addr & z.mask) | h;
+            if (ziel == z.addr)
+                continue;
+            const QString host = QHostAddress(ziel).toString();
+            if (m_seen.contains(host))
+                continue;               // hat schon per SSDP geantwortet
+
+            QTcpSocket *s = new QTcpSocket(this);
+            ++m_probes;
+            connect(s, &QTcpSocket::connected, this, [this, s, host]() { probeDone(s, host, true); });
+            connect(s, static_cast<void (QAbstractSocket::*)(QAbstractSocket::SocketError)>(&QAbstractSocket::error),
+                    this, [this, s, host](QAbstractSocket::SocketError) { probeDone(s, host, false); });
+            QTimer::singleShot(2500, s, [this, s, host]() { probeDone(s, host, false); });
+            s->connectToHost(host, kSsapPort);
+        }
     }
+    m_beklopft = beklopft.join(QStringLiteral(", "));
+
     if (m_probes == 0)
         setRunning(false);
 }
@@ -187,8 +241,13 @@ void Discovery::probeDone(QTcpSocket *s, const QString &host, bool open)
         m_seen.insert(host);
         emit found(host, host);
     }
-    if (--m_probes <= 0)
+    if (--m_probes <= 0) {
+        if (m_seen.isEmpty())
+            ErrorLog::note(tr("Search"),
+                           tr("nothing found - neither by SSDP nor on port 3001"),
+                           m_beklopft);
         setRunning(false);
+    }
 }
 
 void Discovery::setRunning(bool r)
@@ -237,6 +296,9 @@ void Discovery::fetchName(const QString &host, const QString &location)
     QNetworkReply *reply = m_net->get(QNetworkRequest(QUrl(location)));
     connect(reply, &QNetworkReply::finished, this, [this, reply, host]() {
         QString name = host;
+        if (reply->error() != QNetworkReply::NoError)
+            ErrorLog::note(tr("Search"), tr("device found, but it does not give up its name"),
+                           host + QStringLiteral(" - ") + reply->errorString());
         if (reply->error() == QNetworkReply::NoError) {
             const QString xml = QString::fromUtf8(reply->readAll());
             QRegularExpression re(QStringLiteral("<friendlyName>(.*?)</friendlyName>"),

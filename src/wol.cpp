@@ -1,5 +1,7 @@
 #include "wol.h"
 
+#include "errorlog.h"
+
 #include <QByteArray>
 #include <QHostAddress>
 #include <QStringList>
@@ -7,20 +9,55 @@
 
 Wol::Wol(QObject *parent) : QObject(parent) {}
 
+bool Wol::wakeAll(const QStringList &macs, const QString &host)
+{
+    QStringList brauchbar;
+    for (const QString &m : macs)
+        if (!m.trimmed().isEmpty())
+            brauchbar << m.trimmed();
+
+    if (brauchbar.isEmpty()) {
+        ErrorLog::note(tr("Wake-on-LAN"),
+                       tr("no MAC address stored for this device - the TV only names it while connected, or enter it by hand"),
+                       host);
+        return false;
+    }
+
+    bool irgendeins = false;
+    for (const QString &m : brauchbar)
+        irgendeins = wake(m, host) || irgendeins;
+    return irgendeins;
+}
+
 bool Wol::wake(const QString &mac, const QString &host)
 {
+    /* Drei unterscheidbare Faelle, und alle drei sehen auf dem Bildschirm
+       gleich aus - deshalb steht der Unterschied im Protokoll. */
+    if (mac.trimmed().isEmpty()) {
+        ErrorLog::note(tr("Wake-on-LAN"),
+                       tr("no MAC address stored for this device - the TV only names it while connected, or enter it by hand"),
+                       host);
+        return false;
+    }
+
     // Trennzeichen beliebig: ":" oder "-" oder gar keins
     QString clean = mac;
     clean.remove(QLatin1Char(':')).remove(QLatin1Char('-')).remove(QLatin1Char(' '));
-    if (clean.length() != 12)
+    if (clean.length() != 12) {
+        ErrorLog::note(tr("Wake-on-LAN"),
+                       tr("the stored MAC address does not have twelve hex digits"), mac);
         return false;
+    }
 
     QByteArray addr;
     for (int i = 0; i < 12; i += 2) {
         bool ok = false;
         const int byte = clean.mid(i, 2).toInt(&ok, 16);
-        if (!ok)
+        if (!ok) {
+            ErrorLog::note(tr("Wake-on-LAN"),
+                           tr("the stored MAC address contains characters that are not hex digits"), mac);
             return false;
+        }
         addr.append(static_cast<char>(byte));
     }
 
@@ -58,5 +95,9 @@ bool Wol::wake(const QString &mac, const QString &host)
                 any = true;
         }
     }
+    if (!any)
+        ErrorLog::note(tr("Wake-on-LAN"),
+                       tr("the magic packet could not be sent - no network on the phone?"),
+                       sock.errorString());
     return any;
 }

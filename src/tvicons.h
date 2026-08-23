@@ -32,10 +32,16 @@ public:
        Symbole, deshalb steht es hier und nicht in LgTv. */
     Q_INVOKABLE void saveToGallery(const QString &url, const QString &name);
 
+    /* Symbol vorab auf die Platte holen. Ohne das bleibt eine frisch belegte
+       Kachel leer, bis die Auswahlliste das Symbol einmal geladen hat. */
+    Q_INVOKABLE void prefetch(const QString &url);
+
 signals:
     void fingerprintChanged();
     void saved(const QString &path);
     void saveFailed(const QString &message);
+    // Das Symbol liegt jetzt bereit - die Kachel darf es erneut anfordern
+    void iconReady(const QString &url);
 
 private:
     void pin(QNetworkReply *reply) const;
