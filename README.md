@@ -4,9 +4,11 @@ A native **SailfishOS** remote control for **LG webOS** televisions.
 
 It speaks the LG **SSAP** WebSocket protocol (over TLS) directly — d-pad,
 volume, channels, inputs, media keys, a pointer/touchpad, a number pad and app
-launching — and powers the TV on with **Wake-on-LAN**. TVs are found by SSDP
-discovery, with a fallback scan of the local subnet, and several TVs can be
-stored and switched between.
+launching — and powers the TV on with **Wake-on-LAN**. Switched-on TVs are
+found by SSDP discovery with a scan of the local subnets behind it, and several
+TVs can be stored and switched between. A TV that is asleep answers nothing and
+cannot be discovered — switch it on once, and from then on the app knows it and
+can wake it.
 
 > Package id: `harbour-lgremote`. Built and used on a Sony Xperia 10 III
 > (SailfishOS 5.x). English and German user interface.
