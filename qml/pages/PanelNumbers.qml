@@ -141,17 +141,37 @@ Item {
                         border.color: Theme.rgba(Theme.primaryColor, 0.22)
                     }
 
+                    /* QML merkt sich einen gescheiterten Abruf und fragt fuer
+                       dieselbe Quelle nicht noch einmal nach - deshalb cache:
+                       false und ein eigener zweiter Anlauf. Sonst bleibt die
+                       Kachel leer, bis die App neu startet. */
                     Image {
                         id: tileIcon
                         anchors.centerIn: parent
                         width: parent.width - 2 * Theme.paddingMedium
                         height: width
                         fillMode: Image.PreserveAspectFit
+                        cache: false
+                        asynchronous: true
                         source: modelData.img.length > 0
                                 ? "../images/" + modelData.img
                                 : modelData.icon.length > 0
                                   ? "image://tvicon/" + encodeURIComponent(modelData.icon) : ""
                         visible: status === Image.Ready
+
+                        onStatusChanged: if (status === Image.Error && modelData.icon.length > 0)
+                                             icons.prefetch(modelData.icon)
+
+                        Connections {
+                            target: icons
+                            onIconReady: {
+                                if (url !== modelData.icon) return
+                                // Neu anstossen, jetzt liegt es auf der Platte
+                                var s = tileIcon.source
+                                tileIcon.source = ""
+                                tileIcon.source = s
+                            }
+                        }
                     }
 
                     Label {

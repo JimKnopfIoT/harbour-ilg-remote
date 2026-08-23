@@ -11,6 +11,20 @@ Page {
 
     allowedOrientations: Orientation.Portrait
 
+    /* Die PathView baut ihre Bahn neu auf, sobald die Seite verdeckt und
+       wieder freigegeben wird - und steht dann wieder auf der ersten Seite.
+       Wer von der Kachelseite aus eine App auswaehlt, will aber dorthin
+       zurueck, wo er hergekommen ist. Also selbst merken. */
+    property int gemerkteSeite: 0
+
+    onStatusChanged: {
+        if (status === PageStatus.Deactivating)
+            gemerkteSeite = carousel.currentIndex
+        else if ((status === PageStatus.Activating || status === PageStatus.Active)
+                 && carousel.currentIndex !== gemerkteSeite)
+            carousel.positionViewAtIndex(gemerkteSeite, PathView.Center)
+    }
+
     PathView {
         id: carousel
         anchors.fill: parent

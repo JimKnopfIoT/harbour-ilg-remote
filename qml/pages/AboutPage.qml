@@ -34,12 +34,29 @@ Page {
 
             Label {
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: qsTr("Version %1").arg("1.1.2")
+                text: qsTr("Version %1").arg("1.1.3")
                 font.pixelSize: Theme.fontSizeSmall
                 color: Theme.secondaryColor
             }
 
             Item { width: 1; height: Theme.paddingLarge }
+
+            Button {
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: qsTr("Glossary")
+                onClicked: pageStack.push(Qt.resolvedUrl("GlossaryPage.qml"))
+            }
+
+            /* Der Zaehler steht im Knopf: so sieht man, ob es etwas zu lesen
+               gibt, ohne die Seite zu oeffnen. Leer ist der Normalfall. */
+            Button {
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: errorLog.count > 0 ? qsTr("Error log (%1)").arg(errorLog.count)
+                                         : qsTr("Error log - empty")
+                onClicked: pageStack.push(Qt.resolvedUrl("ErrorLogPage.qml"))
+            }
+
+            Item { width: 1; height: Theme.paddingMedium }
 
             Label {
                 x: Theme.horizontalPageMargin

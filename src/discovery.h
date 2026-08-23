@@ -48,6 +48,8 @@ private:
     QTimer *m_repeat = nullptr;
     QTimer *m_deadline = nullptr;
     QSet<QString> m_seen;
+    // Welche Netze abgeklopft wurden - fuers Protokoll, wenn nichts kam
+    QString m_beklopft;
     int m_rounds = 0;
     int m_probes = 0;
     bool m_running = false;

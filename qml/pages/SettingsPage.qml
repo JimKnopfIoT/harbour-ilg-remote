@@ -160,15 +160,15 @@ Page {
                        ? tv.certFingerprint.substring(0, 16) : qsTr("not stored")
             }
 
-            Button {
-                anchors.horizontalCenter: parent.horizontalCenter
-                text: qsTr("Reset pairing")
-                enabled: tv.clientKey.length > 0 || tv.certFingerprint.length > 0
-                onClicked: {
-                    tv.clientKey = ""
-                    tv.certFingerprint = ""
-                    tv.disconnectTv()
-                }
+            /* Der Schluessel gehoert zum Geraet, nicht zur App - deshalb
+               steht das Loesen dort, wo die Geraete stehen. */
+            Label {
+                x: Theme.horizontalPageMargin
+                width: parent.width - 2 * Theme.horizontalPageMargin
+                wrapMode: Text.Wrap
+                font.pixelSize: Theme.fontSizeExtraSmall
+                color: Theme.secondaryColor
+                text: qsTr("A pairing belongs to one television. Releasing it is therefore done in the device list: hold the entry, then Reset pairing.")
             }
 
             // ---------- Tastencode ----------

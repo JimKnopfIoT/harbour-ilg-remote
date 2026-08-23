@@ -88,10 +88,26 @@ Page {
                 width: Theme.iconSizeSmall
                 height: width
                 fillMode: Image.PreserveAspectFit
+                cache: false
+                asynchronous: true
                 // Der Fernseher gibt die Symbole nur ueber https heraus
                 source: model.icon.length > 0
                         ? "image://tvicon/" + encodeURIComponent(model.icon) : ""
                 visible: status === Image.Ready
+
+                // Gescheitert heisst nicht endgueltig - der TV weist unter Last ab
+                onStatusChanged: if (status === Image.Error && model.icon.length > 0)
+                                     icons.prefetch(model.icon)
+
+                Connections {
+                    target: icons
+                    onIconReady: {
+                        if (url !== model.icon) return
+                        var s = icon.source
+                        icon.source = ""
+                        icon.source = s
+                    }
+                }
             }
 
             Label {

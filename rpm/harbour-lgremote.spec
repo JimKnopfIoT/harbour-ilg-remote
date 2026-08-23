@@ -2,7 +2,7 @@ Name:       harbour-lgremote
 # Keep the build machine's name out of the RPM header.
 %define _buildhost reproducible-builder
 Summary:    Fernbedienung für LG webOS-Fernseher
-Version:    1.1.2
+Version:    1.1.3
 Release:    1
 License:    MIT
 URL:        https://github.com/JimKnopfIoT/harbour-ilg-remote

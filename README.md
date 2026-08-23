@@ -35,12 +35,26 @@ stored in the gallery. Example content.)*
   (press and hold one to pick an app or input), plus a fixed **screenshot**
   tile that stores the TV's current picture in the gallery.
 * Apps and inputs listed with the icons the TV serves, sorted by name.
-* **Wake-on-LAN** power-on via a magic packet.
+* **Wake-on-LAN** power-on via a magic packet, sent to *every* MAC the TV
+  reports. Some firmware names its interfaces without an address or a state,
+  so the right one cannot be picked — and a broadcast costs nothing.
 * A **self-healing connection**: a heartbeat spots a link that died silently
   (phone asleep, TV switched off), and the app reconnects on its own with a
   growing delay. Deliberate disconnects stay disconnected.
-* **Discovery** by SSDP — repeated on every network interface, and if nothing
-  answers, the local subnet is probed on port 3001.
+* **Discovery** by SSDP — repeated on every network interface, always followed
+  by a probe of the local subnets on port 3001. Other devices answer the
+  multicast too, so a TV that swallows it must not be allowed to vanish behind
+  them. Interfaces without a hardware address are skipped: that is the mobile
+  data link, and the living room is not behind it.
+* An **error log** under *About*. Every place that promises something — waking
+  the TV, fetching an icon, sending text, assigning a tile, sending a key —
+  writes there when the promise was not kept, in plain words instead of SSAP
+  addresses. Empty is the normal case, which is what makes it worth reading.
+* A **glossary** under *About* explaining every symbol in the app.
+* The device list shows each TV's state: **on** (the TV says so itself),
+  **standby / reachable** (it answers on port 3001 but is not running) or
+  **off**. A tap opens that device's system data; press and hold for edit,
+  release the pairing, or forget the device.
 * **Certificate pinning**: the TV's self-signed certificate is remembered on the
   first connection and checked from then on.
 * Multiple devices — add, edit and switch between TVs.

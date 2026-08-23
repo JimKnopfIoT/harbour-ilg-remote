@@ -18,10 +18,16 @@ public:
 
     Q_INVOKABLE void scan(const QString &host);
 
+    /* Kurzer Test auf Port 3001: antwortet der Fernseher ueberhaupt?
+       Fuer die Anzeige an-/abwesend in der Geraeteliste. */
+    Q_INVOKABLE void probe(const QString &host);
+
 signals:
     /** open=true, wenn der Port eine Verbindung annimmt. */
     void result(int port, const QString &service, bool open);
     void finished();
+    /** Antwort auf probe(): erreichbar oder nicht. */
+    void reachable(const QString &host, bool up);
 
 private:
     int m_outstanding = 0;

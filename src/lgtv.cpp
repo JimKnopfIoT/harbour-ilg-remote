@@ -1,5 +1,7 @@
 #include "lgtv.h"
 
+#include "errorlog.h"
+
 #include <algorithm>
 
 #include <QCryptographicHash>
@@ -35,8 +37,24 @@ const int kRetryCap = 15000;
 const int kTlsTries = 2;
 const int kTlsWait = 2000;
 
-// Anmelde-Handshake der LG-Fernseher. Der signed-Block wird nicht geprueft,
-// muss aber da sein.
+/* Anmelde-Handshake der LG-Fernseher. Der signed-Block wird nicht geprueft,
+   muss aber da sein.
+
+   ACHTUNG: Das hier ist JSON, kein C++. Ein Kommentar zwischen den Klammern
+   macht es unlesbar, und QJsonDocument liefert dann stillschweigend ein
+   leeres Objekt - die App meldet sich mit leerem Manifest an, der Fernseher
+   zeigt keine Abfrage mehr, und mit vorhandenem Schluessel faellt es nicht
+   einmal auf. Am 23.08.2026 genau so passiert. Anmerkungen gehoeren hierher.
+
+   Die Liste unten ist die, nach der der Fernseher die Rechte erteilt - die im
+   signed-Block zaehlt nicht. Sie ist trotzdem nicht beliebig erweiterbar:
+   READ_UPDATE_INFO und UPDATE_FROM_REMOTE_APP nachzutragen, um den
+   Firmware-Stand zu bekommen, kostete am Geraet die HDMI-Eingaenge aus
+   getExternalInputList. Der Fernseher erteilt offenbar nicht additiv. Die
+   Eingangsliste wiegt schwerer als eine Zeile Firmware.
+
+   Die Rechte haengen am Kopplungsschluessel: Wer hier etwas aendert, muss die
+   Kopplung zuruecksetzen, sonst gilt weiter der alte Umfang. */
 const char *kManifest = R"JSON({
   "manifestVersion": 1,
   "appVersion": "1.0",
@@ -104,7 +122,8 @@ LgTv::LgTv(QObject *parent)
     connect(m_connect, &QTimer::timeout, this, [this]() {
         if (m_main.state() == QAbstractSocket::ConnectedState)
             return;
-        qWarning() << "LgTv: keine Antwort beim Handshake - abbrechen";
+        ErrorLog::note(tr("Connection"), tr("no answer during the TLS handshake"),
+                       m_host);
         setStatus(tr("no answer while connecting"));
         m_main.abort();
         scheduleRetry();
@@ -154,6 +173,9 @@ LgTv::LgTv(QObject *parent)
                         return;
                     }
                     m_certBlocked = true;
+                    ErrorLog::note(tr("Certificate"),
+                                   tr("the TV shows a different certificate than the one remembered - reset the pairing"),
+                                   m_host);
                     setStatus(tr("Certificate does not match - reset the pairing"));
                 });
     };
@@ -162,7 +184,7 @@ LgTv::LgTv(QObject *parent)
 
     connect(&m_main, static_cast<void (QWebSocket::*)(QAbstractSocket::SocketError)>(&QWebSocket::error),
             this, [this](QAbstractSocket::SocketError) {
-                qWarning() << "LgTv: Socketfehler:" << m_main.errorString();
+                ErrorLog::note(tr("Connection"), m_main.errorString(), m_host);
                 setStatus(tr("Error: %1").arg(m_main.errorString()));
                 emit failed(m_main.errorString());
                 /* Scheitert schon der Verbindungsaufbau - Fernseher aus,
@@ -386,6 +408,8 @@ void LgTv::disconnectTv()
     m_pending.clear();
     m_subs.clear();
     m_textInputReady = false;
+    m_power.clear();
+    emit powerStateChanged();
     emit textInputChanged();
     emit stateChanged();
     setStatus(tr("disconnected"));
@@ -406,6 +430,8 @@ void LgTv::onMainDisconnected()
 {
     m_connect->stop();
     m_linkUp = m_registered = m_pointerReady = false;
+    m_power.clear();
+    emit powerStateChanged();
     m_pending.clear();
     /* Die Abos galten fuer die alte Verbindung; nach der Neuanmeldung
        vergibt der Fernseher neue Kennungen. */
@@ -415,7 +441,7 @@ void LgTv::onMainDisconnected()
 
     if (m_userClosed)
         return;
-    qWarning() << "LgTv: Verbindung weg";
+    ErrorLog::note(tr("Connection"), tr("connection lost"), m_host);
     setStatus(tr("connection lost"));
     scheduleRetry();
 }
@@ -450,7 +476,8 @@ void LgTv::probe()
 // zu warten hat keinen Zweck
 void LgTv::handleDrop()
 {
-    qWarning() << "LgTv: kein Lebenszeichen - Verbindung gilt als tot";
+    ErrorLog::note(tr("Connection"),
+                   tr("no sign of life within 8 s - the connection counts as dead"), m_host);
     setStatus(tr("no answer from the TV"));
     m_pointer.abort();
     m_main.abort();
@@ -518,6 +545,9 @@ void LgTv::askPointer()
     if (!m_registered || m_userClosed || m_pointerReady)
         return;
     if (m_pointerTries >= kPointerTries) {
+        ErrorLog::note(tr("Key channel"),
+                       tr("the TV does not hand out the address for the key channel - arrow keys, OK and Back stay locked"),
+                       m_host);
         setStatus(tr("key channel stays closed"));
         return;
     }
@@ -534,11 +564,23 @@ void LgTv::askPointer()
 
 void LgTv::sendRegister()
 {
+    QJsonParseError fehler;
+    const QJsonObject manifest =
+        QJsonDocument::fromJson(QByteArray(kManifest), &fehler).object();
+    /* Ein unlesbares Manifest faellt sonst nirgends auf: der Fernseher
+       antwortet auf die Anmeldung dann einfach nicht mehr. */
+    if (manifest.isEmpty()) {
+        ErrorLog::note(tr("Sign-on"),
+                       tr("the built-in handshake is unreadable - pairing is impossible"),
+                       fehler.errorString());
+        setStatus(tr("Error: %1").arg(fehler.errorString()));
+        return;
+    }
+
     QJsonObject payload;
     payload.insert(QStringLiteral("forcePairing"), false);
     payload.insert(QStringLiteral("pairingType"), QStringLiteral("PROMPT"));
-    payload.insert(QStringLiteral("manifest"),
-                   QJsonDocument::fromJson(QByteArray(kManifest)).object());
+    payload.insert(QStringLiteral("manifest"), manifest);
     if (!m_clientKey.isEmpty())
         payload.insert(QStringLiteral("client-key"), m_clientKey);
     else
@@ -584,6 +626,12 @@ void LgTv::onMainMessage(const QString &text)
         // wenn jemand die Originalfernbedienung benutzt.
         subscribe(QStringLiteral("ssap://audio/getVolume"), WantVolume);
         subscribe(QStringLiteral("ssap://tv/getCurrentChannel"), WantChannel);
+        /* Der Einschaltzustand. Ohne ihn gilt eine stehende Verbindung als
+           "Fernseher an" - im Netzwerk-Standby ist das falsch. */
+        subscribe(QStringLiteral("ssap://com.webos.service.tvpower/power/getPowerState"),
+                  WantPower);
+        // Das Abo meldet Aenderungen; der Stand von jetzt kommt auf Nachfrage
+        requestPowerState();
         /* Ohne angemeldete Fernbedienungstastatur ordnet der TV Text keinem
            Feld zu und verwirft ihn - am Geraet nachgewiesen. */
         subscribe(QStringLiteral("ssap://com.webos.service.ime/registerRemoteKeyboard"),
@@ -595,7 +643,17 @@ void LgTv::onMainMessage(const QString &text)
         refreshVolume();
         refreshChannel();
         // liefert die MAC zum Aufwecken; die Suche im Netz kann sie nicht
+        m_netTries = 0;
         requestNetworkInfo();
+        /* Nennt der Fernseher seinen Einschaltzustand nicht, kann die
+           Geraeteliste "an" nicht von "Bereitschaft" unterscheiden. Dann
+           soll wenigstens dastehen, woran es liegt. */
+        QTimer::singleShot(5000, this, [this]() {
+            if (m_registered && m_power.isEmpty())
+                ErrorLog::note(tr("power state"),
+                               tr("the TV does not state whether it is running - the device list cannot tell on from standby"),
+                               m_host);
+        });
         startBeat();
         return;
     }
@@ -609,14 +667,43 @@ void LgTv::onMainMessage(const QString &text)
             m_lastError = err;
             emit statusTextChanged();
             // Die Abfrage ist weg, der Auftrag darf es nicht sein
-            const Want offen = m_pending.take(msg.value(QStringLiteral("id")).toString());
-            if (offen == WantAppState)
+            const QString fid = msg.value(QStringLiteral("id")).toString();
+            /* Abonnements stehen in m_subs, nicht in m_pending. Ohne diesen
+               Blick liefe jeder abgewiesene Dauerauftrag namenlos als
+               "Befehl" ins Protokoll. */
+            const Pending offen = m_pending.contains(fid) ? m_pending.take(fid)
+                                                          : m_subs.value(fid);
+            /* Drei Abfuhren sind eingeplant und haben ihren eigenen Weg.
+               getAppState wird auf mancher Firmware grundsaetzlich abgewiesen
+               (dann wird YouTube neu gestartet), der Tastenkanal wird ohnehin
+               wiederholt erfragt, und der Kanal ist bei laufendem
+               HDMI-Eingang schlicht keiner. Alle drei antworten unten selbst -
+               im Protokoll haetten sie nur bei jeder Anmeldung dasselbe
+               wiederholt. */
+            const bool eingeplant = offen.want == WantAppState || offen.want == WantPointer
+                                    || offen.want == WantChannel;
+            if (!eingeplant)
+                ErrorLog::note(wantName(offen.want), err,
+                               offen.uri.isEmpty() ? m_host : offen.uri);
+            if (offen.want == WantAppState) {
                 relaunchYouTube();
-            else if (offen == WantPointer)
+            } else if (offen.want == WantPointer) {
                 askPointer();
+            } else if (offen.want == WantNetwork) {
+                chaseNetworkInfo();
+            } else if (offen.want == WantChannel) {
+                /* Kein Kanal ist kein Fehler: auf einem HDMI-Eingang gibt es
+                   keinen. Die Anzeige muss dann leer sein und nicht den
+                   letzten Sender von vorgestern zeigen. */
+                if (!m_channel.isEmpty()) {
+                    m_channel.clear();
+                    emit channelChanged();
+                }
+            }
             return;
         }
 
+        ErrorLog::note(tr("Sign-on"), err, m_host);
         setStatus(tr("Error: %1").arg(err));
         emit failed(err);
         // Nur eine abgelehnte Anmeldung entwertet den Schluessel
@@ -629,16 +716,39 @@ void LgTv::onMainMessage(const QString &text)
 
     const QString id = msg.value(QStringLiteral("id")).toString();
     if (m_subs.contains(id))
-        handlePayload(m_subs.value(id), payload);   // bleibt bestehen
+        handlePayload(m_subs.value(id).want, payload);   // bleibt bestehen
     else if (m_pending.contains(id))
-        handlePayload(m_pending.take(id), payload);
+        handlePayload(m_pending.take(id).want, payload);
+}
+
+/* Klartext fuer das Protokoll - eine SSAP-Adresse sagt dem Nutzer nichts. */
+QString LgTv::wantName(Want want)
+{
+    switch (want) {
+    case WantVolume:     return tr("volume");
+    case WantPointer:    return tr("key channel");
+    case WantApps:       return tr("app list");
+    case WantInputs:     return tr("input list");
+    case WantSystem:     return tr("system data");
+    case WantNetwork:    return tr("network data (MAC address)");
+    case WantAudio:      return tr("sound settings");
+    case WantChannel:    return tr("channel");
+    case WantPower:      return tr("power state");
+    case WantKeyboard:   return tr("remote keyboard");
+    case WantTextResult: return tr("text entry");
+    case WantAppState:   return tr("app state");
+    case WantHeartbeat:  return tr("sign of life");
+    case WantCapture:    return tr("screenshot");
+    case WantNothing:    break;
+    }
+    return tr("command");
 }
 
 /* Abonnement: der Fernseher meldet Aenderungen von sich aus. */
 void LgTv::subscribe(const QString &uri, Want want, const QJsonObject &payload)
 {
     const QString id = QStringLiteral("sub_%1").arg(++m_counter);
-    m_subs.insert(id, want);
+    m_subs.insert(id, Pending{ want, uri });
     QJsonObject msg;
     msg.insert(QStringLiteral("id"), id);
     msg.insert(QStringLiteral("type"), QStringLiteral("subscribe"));
@@ -649,12 +759,19 @@ void LgTv::subscribe(const QString &uri, Want want, const QJsonObject &payload)
 
 QString LgTv::request(const QString &uri, const QJsonObject &payload, Want want)
 {
-    if (!m_registered && want != WantPointer)
+    /* Alles hier hindurch setzt eine angemeldete Verbindung voraus. Wer den
+       Fernseher im Bereitschaftsbetrieb bedient, soll nicht raten muessen,
+       warum nichts geschieht. */
+    if (!m_registered && want != WantPointer) {
+        ErrorLog::note(tr("Command not sent"),
+                       tr("not signed on to the TV"), uri);
         return QString();
+    }
 
     const QString id = QStringLiteral("req_%1").arg(++m_counter);
-    if (want != WantNothing)
-        m_pending.insert(id, want);
+    /* Auch die Befehle ohne erwartete Antwort werden vermerkt: der Fernseher
+       beantwortet jede Anfrage, und ein Fehler soll seine Adresse nennen. */
+    m_pending.insert(id, Pending{ want, uri });
 
     QJsonObject msg;
     msg.insert(QStringLiteral("id"), id);
@@ -673,8 +790,13 @@ void LgTv::handlePayload(Want want, const QJsonObject &payload)
         break;
     case WantPointer: {
         const QString path = payload.value(QStringLiteral("socketPath")).toString();
-        if (!path.isEmpty())
+        if (path.isEmpty()) {
+            ErrorLog::note(tr("Key channel"),
+                           tr("the TV answered without an address for the key channel"), m_host);
+            askPointer();
+        } else {
             m_pointer.open(QUrl(path));
+        }
         break;
     }
     case WantVolume: {
@@ -741,6 +863,9 @@ void LgTv::handlePayload(Want want, const QJsonObject &payload)
     case WantTextResult: {
         // Ohne diese Antwort sendet die App blind
         const bool ok = payload.value(QStringLiteral("returnValue")).toBool();
+        if (!ok)
+            ErrorLog::note(tr("Text entry"), tr("the TV rejected the text"),
+                           payload.value(QStringLiteral("errorText")).toString());
         m_lastError = ok ? tr("insertText: accepted")
                          : tr("insertText rejected: %1").arg(payload.value(QStringLiteral("errorText")).toString());
         emit statusTextChanged();
@@ -790,10 +915,24 @@ void LgTv::handlePayload(Want want, const QJsonObject &payload)
     }
     case WantCapture: {
         const QString uri = payload.value(QStringLiteral("imageUri")).toString();
-        if (uri.isEmpty())
+        if (uri.isEmpty()) {
+            ErrorLog::note(tr("Screenshot"),
+                           tr("the TV took the order but names no image"), m_host);
             setStatus(tr("no screenshot from the TV"));
+        }
         else
             emit captureReady(uri);
+        break;
+    }
+    case WantPower: {
+        /* Bekannte Werte: Active, Screen Off, Screen Saver, Active Standby,
+           Suspend, Power Off. Bei "processing" ist der Fernseher im Uebergang
+           und meldet gleich noch einmal. */
+        const QString zustand = payload.value(QStringLiteral("state")).toString();
+        if (!zustand.isEmpty() && zustand != m_power) {
+            m_power = zustand;
+            emit powerStateChanged();
+        }
         break;
     }
     case WantChannel: {
@@ -857,9 +996,37 @@ void LgTv::handlePayload(Want want, const QJsonObject &payload)
                 wakeMac = mac;
             }
         }
+        /* Am eigenen Geraet gemessen (23.08.2026): Diese Firmware nennt zu
+           den Schnittstellen weder ipAddress noch state, nur je eine MAC -
+           und davon drei. Welche die richtige ist, laesst sich daraus nicht
+           entscheiden. Also wird gar nicht entschieden: Das Weckpaket ist
+           eine Rundsendung, zwei davon kosten nichts. p2p bleibt draussen,
+           die Strecke ist nicht anfunkbar. */
+        QStringList alle;
+        for (int i = 0; i < keys.size(); ++i) {
+            if (keys.at(i) == QLatin1String("p2pInfo"))
+                continue;
+            const QString mac = payload.value(keys.at(i)).toObject()
+                                    .value(QStringLiteral("macAddress")).toString().toLower();
+            if (!mac.isEmpty() && !alle.contains(mac))
+                alle.append(mac);
+        }
+        // Die per Adresse oder Zustand erkannte zuerst - sie steht im Eintrag
+        if (!wakeMac.isEmpty()) {
+            alle.removeAll(wakeMac);
+            alle.prepend(wakeMac);
+        }
+
         emit networkInfoReceived(m);
-        if (!wakeMac.isEmpty())
-            emit macDiscovered(wakeMac);
+        if (!alle.isEmpty()) {
+            m_netTries = 0;
+            emit macsDiscovered(alle);
+        } else {
+            ErrorLog::note(tr("MAC address"),
+                           tr("the TV answered without a MAC address - no wake-on-LAN possible"),
+                           m_host);
+            chaseNetworkInfo();
+        }
         break;
     }
     case WantAudio: {
@@ -880,16 +1047,6 @@ void LgTv::handlePayload(Want want, const QJsonObject &payload)
         emit audioStatusReceived(m);
         break;
     }
-    case WantSoftware: {
-        QVariantMap m;
-        m.insert(tr("Firmware"),
-                 payload.value(QStringLiteral("major_ver")).toString()
-                 + QStringLiteral(".") + payload.value(QStringLiteral("minor_ver")).toString());
-        m.insert(tr("Product"), payload.value(QStringLiteral("product_name")).toString());
-        m.insert(QStringLiteral("webOS"), payload.value(QStringLiteral("webos_release")).toString());
-        emit softwareInfoReceived(m);
-        break;
-    }
     default:
         break;
     }
@@ -899,8 +1056,10 @@ void LgTv::handlePayload(Want want, const QJsonObject &payload)
 
 void LgTv::button(const QString &name)
 {
-    if (!m_pointerReady)
+    if (!m_pointerReady) {
+        ErrorLog::note(tr("Key"), tr("key channel not open - keystroke discarded"), name);
         return;
+    }
     m_pointer.sendTextMessage(QStringLiteral("type:button\nname:%1\n\n").arg(name));
 }
 
@@ -935,8 +1094,10 @@ void LgTv::flushMove()
 
 void LgTv::click()
 {
-    if (!m_pointerReady)
+    if (!m_pointerReady) {
+        ErrorLog::note(tr("Pointer"), tr("key channel not open - click discarded"), m_host);
         return;
+    }
     m_pointer.sendTextMessage(QStringLiteral("type:click\n\n"));
 }
 
@@ -952,6 +1113,13 @@ void LgTv::scroll(int dx, int dy)
 
 void LgTv::insertText(const QString &text)
 {
+    /* Ohne offenes Feld nimmt der Fernseher den Text an und wirft ihn weg -
+       am Geraet nachgewiesen. Das ist keine Panne, sondern ein Zustand, ueber
+       den sich berichten laesst. */
+    if (!m_textInputReady)
+        ErrorLog::note(tr("Text entry"),
+                       tr("no input field focused on the TV - the text may be discarded"),
+                       text.left(40));
     QJsonObject p;
     p.insert(QStringLiteral("text"), text);
     p.insert(QStringLiteral("replace"), 0);
@@ -1079,6 +1247,24 @@ void LgTv::openChannel(const QString &number)
 void LgTv::turnOff()
 {
     request(QStringLiteral("ssap://system/turnOff"), QJsonObject(), WantNothing);
+    /* Das Abo meldet den Uebergang meist von selbst. Meist ist zu wenig: sonst
+       stuende die Anzeige bis zum naechsten Lebenszeichen auf gruen, also bis
+       zu halbe Minute lang falsch. */
+    QTimer::singleShot(1500, this, &LgTv::requestPowerState);
+    QTimer::singleShot(5000, this, &LgTv::requestPowerState);
+}
+
+bool LgTv::awake() const
+{
+    return m_power == QLatin1String("Active")
+           || m_power == QLatin1String("Screen Off")
+           || m_power == QLatin1String("Screen Saver");
+}
+
+void LgTv::requestPowerState()
+{
+    request(QStringLiteral("ssap://com.webos.service.tvpower/power/getPowerState"),
+            QJsonObject(), WantPower);
 }
 
 /* YouTube meldet handlesRelaunch: liegt die App im Hintergrund, holt
@@ -1185,14 +1371,25 @@ void LgTv::requestNetworkInfo()
             QJsonObject(), WantNetwork);
 }
 
+/* Die MAC gibt es nur hier, und ohne sie laesst sich der Fernseher nicht mehr
+   einschalten - deshalb wird nachgefasst statt aufgegeben. Zwei weitere
+   Versuche mit Abstand; danach steht der Grund im Protokoll. */
+void LgTv::chaseNetworkInfo()
+{
+    if (++m_netTries > 3) {
+        ErrorLog::note(tr("MAC address"),
+                       tr("asked three times without success - enter the MAC by hand under Connected devices"),
+                       m_host);
+        return;
+    }
+    QTimer::singleShot(m_netTries * 2000, this, [this]() {
+        if (m_registered)
+            requestNetworkInfo();
+    });
+}
+
 void LgTv::requestAudioStatus()
 {
     request(QStringLiteral("ssap://audio/getStatus"), QJsonObject(), WantAudio);
 }
 
-void LgTv::requestSoftwareInfo()
-{
-    // Je nach Berechtigung 401; dann fehlt der Firmware-Eintrag
-    request(QStringLiteral("ssap://com.webos.service.update/getCurrentSWInformation"),
-            QJsonObject(), WantSoftware);
-}
