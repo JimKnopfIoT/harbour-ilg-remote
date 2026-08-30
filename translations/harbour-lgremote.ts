@@ -308,42 +308,42 @@ The keys run over a second channel whose address the TV only hands out on reques
 <context>
     <name>Discovery</name>
     <message>
-        <location filename="../src/discovery.cpp" line="119"/>
-        <location filename="../src/discovery.cpp" line="152"/>
-        <location filename="../src/discovery.cpp" line="188"/>
-        <location filename="../src/discovery.cpp" line="201"/>
-        <location filename="../src/discovery.cpp" line="246"/>
-        <location filename="../src/discovery.cpp" line="300"/>
+        <location filename="../src/discovery.cpp" line="127"/>
+        <location filename="../src/discovery.cpp" line="160"/>
+        <location filename="../src/discovery.cpp" line="197"/>
+        <location filename="../src/discovery.cpp" line="210"/>
+        <location filename="../src/discovery.cpp" line="255"/>
+        <location filename="../src/discovery.cpp" line="324"/>
         <source>Search</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/discovery.cpp" line="119"/>
+        <location filename="../src/discovery.cpp" line="127"/>
         <source>no UDP socket for the search - is the phone on a network?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/discovery.cpp" line="153"/>
+        <location filename="../src/discovery.cpp" line="161"/>
         <source>no interface accepted the multicast - trying the default route</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/discovery.cpp" line="189"/>
+        <location filename="../src/discovery.cpp" line="198"/>
         <source>no address of our own in the local network - search not possible</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/discovery.cpp" line="202"/>
+        <location filename="../src/discovery.cpp" line="211"/>
         <source>network too large to scan - add the TV by hand</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/discovery.cpp" line="247"/>
+        <location filename="../src/discovery.cpp" line="256"/>
         <source>nothing found - neither by SSDP nor on port 3001</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/discovery.cpp" line="300"/>
+        <location filename="../src/discovery.cpp" line="324"/>
         <source>device found, but it does not give up its name</source>
         <translation type="unfinished"></translation>
     </message>
@@ -654,15 +654,15 @@ The keys run over a second channel whose address the TV only hands out on reques
     </message>
     <message>
         <location filename="../src/lgtv.cpp" line="105"/>
-        <location filename="../src/lgtv.cpp" line="415"/>
+        <location filename="../src/lgtv.cpp" line="459"/>
         <source>disconnected</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/lgtv.cpp" line="125"/>
         <location filename="../src/lgtv.cpp" line="187"/>
-        <location filename="../src/lgtv.cpp" line="444"/>
-        <location filename="../src/lgtv.cpp" line="479"/>
+        <location filename="../src/lgtv.cpp" line="492"/>
+        <location filename="../src/lgtv.cpp" line="527"/>
         <source>Connection</source>
         <translation type="unfinished"></translation>
     </message>
@@ -693,8 +693,8 @@ The keys run over a second channel whose address the TV only hands out on reques
     </message>
     <message>
         <location filename="../src/lgtv.cpp" line="188"/>
-        <location filename="../src/lgtv.cpp" line="576"/>
-        <location filename="../src/lgtv.cpp" line="707"/>
+        <location filename="../src/lgtv.cpp" line="624"/>
+        <location filename="../src/lgtv.cpp" line="755"/>
         <source>Error: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -715,8 +715,8 @@ The keys run over a second channel whose address the TV only hands out on reques
     </message>
     <message>
         <location filename="../src/lgtv.cpp" line="269"/>
-        <location filename="../src/lgtv.cpp" line="1044"/>
-        <location filename="../src/lgtv.cpp" line="1046"/>
+        <location filename="../src/lgtv.cpp" line="1125"/>
+        <location filename="../src/lgtv.cpp" line="1127"/>
         <source>yes</source>
         <translation type="unfinished"></translation>
     </message>
@@ -746,325 +746,350 @@ The keys run over a second channel whose address the TV only hands out on reques
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="378"/>
-        <location filename="../src/lgtv.cpp" line="508"/>
+        <location filename="../src/lgtv.cpp" line="422"/>
+        <location filename="../src/lgtv.cpp" line="556"/>
         <source>connecting ...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="389"/>
+        <location filename="../src/lgtv.cpp" line="433"/>
         <source>no device</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="444"/>
-        <location filename="../src/lgtv.cpp" line="445"/>
+        <location filename="../src/lgtv.cpp" line="492"/>
+        <location filename="../src/lgtv.cpp" line="493"/>
         <source>connection lost</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="480"/>
+        <location filename="../src/lgtv.cpp" line="528"/>
         <source>no sign of life within 8 s - the connection counts as dead</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="481"/>
+        <location filename="../src/lgtv.cpp" line="529"/>
         <source>no answer from the TV</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="548"/>
-        <location filename="../src/lgtv.cpp" line="794"/>
+        <location filename="../src/lgtv.cpp" line="596"/>
+        <location filename="../src/lgtv.cpp" line="843"/>
+        <location filename="../src/lgtv.cpp" line="849"/>
         <source>Key channel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="549"/>
+        <location filename="../src/lgtv.cpp" line="597"/>
         <source>the TV does not hand out the address for the key channel - arrow keys, OK and Back stay locked</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="551"/>
+        <location filename="../src/lgtv.cpp" line="599"/>
+        <location filename="../src/lgtv.cpp" line="852"/>
         <source>key channel stays closed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="573"/>
-        <location filename="../src/lgtv.cpp" line="706"/>
+        <location filename="../src/lgtv.cpp" line="621"/>
+        <location filename="../src/lgtv.cpp" line="754"/>
         <source>Sign-on</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="574"/>
+        <location filename="../src/lgtv.cpp" line="622"/>
         <source>the built-in handshake is unreadable - pairing is impossible</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="589"/>
+        <location filename="../src/lgtv.cpp" line="637"/>
         <source>waiting for confirmation on the TV</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="590"/>
+        <location filename="../src/lgtv.cpp" line="638"/>
         <source>signing in ...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="616"/>
+        <location filename="../src/lgtv.cpp" line="664"/>
         <source>connected</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="653"/>
-        <location filename="../src/lgtv.cpp" line="736"/>
+        <location filename="../src/lgtv.cpp" line="701"/>
+        <location filename="../src/lgtv.cpp" line="784"/>
         <source>power state</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="654"/>
+        <location filename="../src/lgtv.cpp" line="702"/>
         <source>the TV does not state whether it is running - the device list cannot tell on from standby</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="728"/>
+        <location filename="../src/lgtv.cpp" line="776"/>
         <source>volume</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="729"/>
+        <location filename="../src/lgtv.cpp" line="777"/>
         <source>key channel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="730"/>
+        <location filename="../src/lgtv.cpp" line="778"/>
         <source>app list</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="731"/>
+        <location filename="../src/lgtv.cpp" line="779"/>
         <source>input list</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="732"/>
+        <location filename="../src/lgtv.cpp" line="780"/>
         <source>system data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="733"/>
+        <location filename="../src/lgtv.cpp" line="781"/>
         <source>network data (MAC address)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="734"/>
+        <location filename="../src/lgtv.cpp" line="782"/>
         <source>sound settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="735"/>
+        <location filename="../src/lgtv.cpp" line="783"/>
         <source>channel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="737"/>
+        <location filename="../src/lgtv.cpp" line="785"/>
         <source>remote keyboard</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="738"/>
+        <location filename="../src/lgtv.cpp" line="786"/>
         <source>text entry</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="739"/>
+        <location filename="../src/lgtv.cpp" line="787"/>
         <source>app state</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="740"/>
+        <location filename="../src/lgtv.cpp" line="788"/>
         <source>sign of life</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="741"/>
+        <location filename="../src/lgtv.cpp" line="789"/>
         <source>screenshot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="744"/>
+        <location filename="../src/lgtv.cpp" line="792"/>
         <source>command</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="766"/>
+        <location filename="../src/lgtv.cpp" line="814"/>
         <source>Command not sent</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="767"/>
+        <location filename="../src/lgtv.cpp" line="815"/>
         <source>not signed on to the TV</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="795"/>
+        <location filename="../src/lgtv.cpp" line="844"/>
         <source>the TV answered without an address for the key channel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="867"/>
-        <location filename="../src/lgtv.cpp" line="1120"/>
+        <location filename="../src/lgtv.cpp" line="850"/>
+        <source>the TV names an address outside itself for the key channel - not opened</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lgtv.cpp" line="907"/>
+        <location filename="../src/lgtv.cpp" line="932"/>
+        <source>%1 entries name their icon outside the TV - icons ignored</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lgtv.cpp" line="941"/>
+        <location filename="../src/lgtv.cpp" line="1205"/>
         <source>Text entry</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="867"/>
+        <location filename="../src/lgtv.cpp" line="941"/>
         <source>the TV rejected the text</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="869"/>
+        <location filename="../src/lgtv.cpp" line="943"/>
         <source>insertText: accepted</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="870"/>
+        <location filename="../src/lgtv.cpp" line="944"/>
         <source>insertText rejected: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="919"/>
+        <location filename="../src/lgtv.cpp" line="994"/>
+        <location filename="../src/lgtv.cpp" line="999"/>
         <source>Screenshot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="920"/>
+        <location filename="../src/lgtv.cpp" line="995"/>
         <source>the TV took the order but names no image</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="921"/>
+        <location filename="../src/lgtv.cpp" line="996"/>
+        <location filename="../src/lgtv.cpp" line="1002"/>
         <source>no screenshot from the TV</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="953"/>
+        <location filename="../src/lgtv.cpp" line="1000"/>
+        <source>the TV names the image somewhere other than on itself - not fetched</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lgtv.cpp" line="1034"/>
         <source>Model</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="954"/>
+        <location filename="../src/lgtv.cpp" line="1035"/>
         <source>Serial number</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="1060"/>
+        <location filename="../src/lgtv.cpp" line="1141"/>
         <source>Key</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="1060"/>
+        <location filename="../src/lgtv.cpp" line="1141"/>
         <source>key channel not open - keystroke discarded</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="1098"/>
+        <location filename="../src/lgtv.cpp" line="1179"/>
         <source>Pointer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="1098"/>
+        <location filename="../src/lgtv.cpp" line="1179"/>
         <source>key channel not open - click discarded</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="1121"/>
+        <location filename="../src/lgtv.cpp" line="1206"/>
         <source>no input field focused on the TV - the text may be discarded</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="1381"/>
+        <location filename="../src/lgtv.cpp" line="1207"/>
+        <source>%1 characters</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lgtv.cpp" line="1466"/>
         <source>asked three times without success - enter the MAC by hand under Connected devices</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="972"/>
+        <location filename="../src/lgtv.cpp" line="1053"/>
         <source>MAC wired</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="972"/>
+        <location filename="../src/lgtv.cpp" line="1053"/>
         <source>MAC Wi-Fi</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="973"/>
+        <location filename="../src/lgtv.cpp" line="1054"/>
         <source>MAC direct link</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="985"/>
+        <location filename="../src/lgtv.cpp" line="1066"/>
         <source> - IP</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="1025"/>
-        <location filename="../src/lgtv.cpp" line="1380"/>
+        <location filename="../src/lgtv.cpp" line="1106"/>
+        <location filename="../src/lgtv.cpp" line="1465"/>
         <source>MAC address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="1026"/>
+        <location filename="../src/lgtv.cpp" line="1107"/>
         <source>the TV answered without a MAC address - no wake-on-LAN possible</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="1036"/>
+        <location filename="../src/lgtv.cpp" line="1117"/>
         <source>Sound output</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="1037"/>
+        <location filename="../src/lgtv.cpp" line="1118"/>
         <source>Volume</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="1038"/>
+        <location filename="../src/lgtv.cpp" line="1119"/>
         <source>%1 of %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="1044"/>
-        <location filename="../src/lgtv.cpp" line="1046"/>
+        <location filename="../src/lgtv.cpp" line="1125"/>
+        <location filename="../src/lgtv.cpp" line="1127"/>
         <source>no</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="1043"/>
+        <location filename="../src/lgtv.cpp" line="1124"/>
         <source>External control</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="1041"/>
+        <location filename="../src/lgtv.cpp" line="1122"/>
         <source>Mute</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="1042"/>
+        <location filename="../src/lgtv.cpp" line="1123"/>
         <source>on</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="1042"/>
+        <location filename="../src/lgtv.cpp" line="1123"/>
         <source>off</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="1045"/>
+        <location filename="../src/lgtv.cpp" line="1126"/>
         <source>Volume adjustable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lgtv.cpp" line="1309"/>
+        <location filename="../src/lgtv.cpp" line="1394"/>
         <source>YouTube: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1105,52 +1130,52 @@ The keys run over a second channel whose address the TV only hands out on reques
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PanelMain.qml" line="132"/>
+        <location filename="../qml/pages/PanelMain.qml" line="134"/>
         <source>switched off</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PanelMain.qml" line="149"/>
+        <location filename="../qml/pages/PanelMain.qml" line="151"/>
         <source>wake-up signal sent</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PanelMain.qml" line="151"/>
+        <location filename="../qml/pages/PanelMain.qml" line="153"/>
         <source>no MAC address stored - see the error log</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PanelMain.qml" line="152"/>
+        <location filename="../qml/pages/PanelMain.qml" line="154"/>
         <source>invalid MAC address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PanelMain.qml" line="193"/>
+        <location filename="../qml/pages/PanelMain.qml" line="195"/>
         <source>Back</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PanelMain.qml" line="197"/>
+        <location filename="../qml/pages/PanelMain.qml" line="199"/>
         <source>Info</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PanelMain.qml" line="218"/>
+        <location filename="../qml/pages/PanelMain.qml" line="220"/>
         <source>Input</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PanelMain.qml" line="224"/>
+        <location filename="../qml/pages/PanelMain.qml" line="226"/>
         <source>Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PanelMain.qml" line="240"/>
+        <location filename="../qml/pages/PanelMain.qml" line="242"/>
         <source>Sound</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PanelMain.qml" line="257"/>
+        <location filename="../qml/pages/PanelMain.qml" line="259"/>
         <source>Channel</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1163,28 +1188,33 @@ The keys run over a second channel whose address the TV only hands out on reques
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PanelPad.qml" line="76"/>
+        <location filename="../qml/pages/PanelPad.qml" line="77"/>
         <source>◀   swipe here to change page   ▶</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PanelPad.qml" line="116"/>
+        <location filename="../qml/pages/PanelPad.qml" line="117"/>
         <source>not connected</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PanelPad.qml" line="277"/>
+        <location filename="../qml/pages/PanelPad.qml" line="293"/>
         <source>no text field on the TV - use the magnifier for YouTube</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PanelPad.qml" line="310"/>
+        <location filename="../qml/pages/PanelPad.qml" line="330"/>
         <source>opening keyboard on the TV ...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PanelPad.qml" line="311"/>
+        <location filename="../qml/pages/PanelPad.qml" line="332"/>
         <source>text to the TV</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PanelPad.qml" line="333"/>
+        <source>no TV - text stays here</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1568,78 +1598,93 @@ The keys run over a second channel whose address the TV only hands out on reques
 <context>
     <name>TvIcons</name>
     <message>
-        <location filename="../src/tvicons.cpp" line="47"/>
-        <location filename="../src/tvicons.cpp" line="84"/>
-        <location filename="../src/tvicons.cpp" line="136"/>
-        <location filename="../src/tvicons.cpp" line="141"/>
+        <location filename="../src/tvicons.cpp" line="73"/>
+        <location filename="../src/tvicons.cpp" line="82"/>
+        <location filename="../src/tvicons.cpp" line="109"/>
+        <location filename="../src/tvicons.cpp" line="118"/>
+        <location filename="../src/tvicons.cpp" line="144"/>
         <source>Icon</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/tvicons.cpp" line="48"/>
+        <location filename="../src/tvicons.cpp" line="119"/>
         <source>no certificate remembered yet - connect to the TV once, then the icons will load</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/tvicons.cpp" line="84"/>
+        <location filename="../src/tvicons.cpp" line="144"/>
         <source>not fetched from the TV after three tries</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/tvicons.cpp" line="137"/>
+        <location filename="../src/tvicons.cpp" line="83"/>
         <source>the TV shows a different certificate than the one remembered</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/tvicons.cpp" line="141"/>
+        <location filename="../src/tvicons.cpp" line="74"/>
         <source>TLS error without a certificate to check</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/tvicons.cpp" line="166"/>
-        <location filename="../src/tvicons.cpp" line="177"/>
+        <location filename="../src/tvicons.cpp" line="198"/>
+        <location filename="../src/tvicons.cpp" line="222"/>
+        <location filename="../src/tvicons.cpp" line="233"/>
         <source>Screenshot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/tvicons.cpp" line="166"/>
+        <location filename="../src/tvicons.cpp" line="222"/>
         <source>not fetched from the TV</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/tvicons.cpp" line="172"/>
+        <location filename="../src/tvicons.cpp" line="200"/>
+        <location filename="../src/tvicons.cpp" line="228"/>
         <source>Screenshot not fetched</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/tvicons.cpp" line="177"/>
+        <location filename="../src/tvicons.cpp" line="110"/>
+        <location filename="../src/tvicons.cpp" line="199"/>
+        <source>this address does not lead to the TV - not fetched</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/tvicons.cpp" line="233"/>
         <source>could not be written to the gallery</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/tvicons.cpp" line="179"/>
+        <location filename="../src/tvicons.cpp" line="235"/>
         <source>Screenshot not saved</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/tvicons.cpp" line="201"/>
-        <location filename="../src/tvicons.cpp" line="215"/>
-        <location filename="../src/tvicons.cpp" line="220"/>
+        <location filename="../src/tvicons.cpp" line="257"/>
+        <location filename="../src/tvicons.cpp" line="262"/>
+        <location filename="../src/tvicons.cpp" line="276"/>
+        <location filename="../src/tvicons.cpp" line="281"/>
         <source>Tile</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/tvicons.cpp" line="202"/>
+        <location filename="../src/tvicons.cpp" line="258"/>
+        <source>icon not fetched: this address does not lead to the TV</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/tvicons.cpp" line="263"/>
         <source>icon not fetched: no certificate of the TV remembered yet</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/tvicons.cpp" line="215"/>
+        <location filename="../src/tvicons.cpp" line="276"/>
         <source>icon not fetched from the TV</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/tvicons.cpp" line="220"/>
+        <location filename="../src/tvicons.cpp" line="281"/>
         <source>icon could not be cached</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1680,42 +1725,42 @@ The keys run over a second channel whose address the TV only hands out on reques
 <context>
     <name>harbour-lgremote</name>
     <message>
-        <location filename="../qml/harbour-lgremote.qml" line="77"/>
+        <location filename="../qml/harbour-lgremote.qml" line="85"/>
         <source>Devices</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/harbour-lgremote.qml" line="77"/>
+        <location filename="../qml/harbour-lgremote.qml" line="85"/>
         <source>the stored device list is unreadable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/harbour-lgremote.qml" line="84"/>
+        <location filename="../qml/harbour-lgremote.qml" line="92"/>
         <source>Television</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/harbour-lgremote.qml" line="117"/>
+        <location filename="../qml/harbour-lgremote.qml" line="125"/>
         <source>Tiles</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/harbour-lgremote.qml" line="117"/>
+        <location filename="../qml/harbour-lgremote.qml" line="125"/>
         <source>the stored tiles are unreadable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/harbour-lgremote.qml" line="145"/>
+        <location filename="../qml/harbour-lgremote.qml" line="153"/>
         <source>Tile</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/harbour-lgremote.qml" line="145"/>
+        <location filename="../qml/harbour-lgremote.qml" line="153"/>
         <source>the TV names no icon for this entry</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/harbour-lgremote.qml" line="270"/>
+        <location filename="../qml/harbour-lgremote.qml" line="282"/>
         <source>Screenshot saved: %1</source>
         <translation type="unfinished"></translation>
     </message>

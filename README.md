@@ -57,8 +57,15 @@ stored in the gallery. Example content.)*
   **standby / reachable** (it answers on port 3001 but is not running) or
   **off**. A tap opens that device's system data; press and hold for edit,
   release the pairing, or forget the device.
-* **Certificate pinning**: the TV's self-signed certificate is remembered on the
-  first connection and checked from then on.
+* **Certificate pinning**: the TV's own self-signed certificate is remembered on
+  the first connection and compared against the peer certificate from then on.
+  Only the leaf proves possession of its key in the handshake; the rest of the
+  chain is public and counts for nothing.
+* **Addresses the TV names are checked.** The key channel, the screenshot and
+  every app icon must point back at the TV over https. An app on the TV states
+  its own icon address, and it does not get to decide where this phone opens a
+  connection.
+* **Display cutout aware**: on a phone with a notch, nothing is placed under it.
 * Multiple devices — add, edit and switch between TVs.
 * A cover with play/pause and connection state.
 

@@ -26,6 +26,71 @@ QString cacheName(const QString &url)
         QCryptographicHash::hash(url.toUtf8(), QCryptographicHash::Sha1).toHex()) + QStringLiteral(".png");
 }
 
+/* Ein Symbol ist so gross wie ein Symbol, ein Bildschirmfoto so gross wie ein
+   Bild. Wer mehr schickt, will nicht liefern, sondern den Arbeitsspeicher
+   fuellen - readAll() nimmt sonst alles. */
+const qint64 kMaxSymbol  =  4 * 1024 * 1024;
+const qint64 kMaxAufnahme = 32 * 1024 * 1024;
+
+/* Adressen aus der App-Liste bestimmt die App auf dem Fernseher selbst. Nur
+   https auf den Fernseher wird abgerufen: bei http gibt es keinen Handschlag
+   und damit auch kein gemerktes Zertifikat, das noch etwas pruefen koennte,
+   und ein fremder Host waere ohnehin nicht der Fernseher. */
+bool vomFernseher(const QString &url, const QString &host)
+{
+    if (host.isEmpty())
+        return false;
+    const QUrl u(url);
+    return u.isValid()
+           && u.scheme().compare(QLatin1String("https"), Qt::CaseInsensitive) == 0
+           && u.host().compare(host, Qt::CaseInsensitive) == 0;
+}
+
+/* Zertifikat und Groesse an einen laufenden Abruf haengen.
+
+   Geprueft wird das Zertifikat der Gegenstelle - peerCertificate() -, nicht
+   das erstbeste aus der Fehlerliste. Deren Reihenfolge liegt nicht in unserer
+   Hand: Steht die Zwischenstelle vorn, verglich die alte Fassung den
+   gemerkten Fingerabdruck mit dem falschen Zertifikat und wies den Abruf ab,
+   obwohl alles stimmte. Nur das Blatt beweist im Handschlag den Besitz seines
+   Schluessels; jedes weitere Zertifikat der Kette ist oeffentliches Beiwerk
+   und taugt nicht als Ausweis. */
+void anhaengen(QNetworkReply *reply, const QString &fingerprint, qint64 max)
+{
+    QObject::connect(reply, &QNetworkReply::sslErrors, reply,
+                     [reply, fingerprint](const QList<QSslError> &errors) {
+        QSslCertificate blatt = reply->sslConfiguration().peerCertificate();
+        if (blatt.isNull()) {
+            // Aeltere Qt-Fassungen fuellen das erst spaeter
+            for (const QSslError &e : errors) {
+                if (!e.certificate().isNull()) {
+                    blatt = e.certificate();
+                    break;
+                }
+            }
+        }
+        if (blatt.isNull()) {
+            ErrorLog::note(TvIcons::tr("Icon"),
+                           TvIcons::tr("TLS error without a certificate to check"), QString());
+            return;
+        }
+        const QString gesehen = QString::fromLatin1(
+            blatt.digest(QCryptographicHash::Sha256).toHex());
+        if (gesehen == fingerprint)
+            reply->ignoreSslErrors();
+        else
+            ErrorLog::note(TvIcons::tr("Icon"),
+                           TvIcons::tr("the TV shows a different certificate than the one remembered"),
+                           gesehen);
+    });
+
+    QObject::connect(reply, &QNetworkReply::downloadProgress, reply,
+                     [reply, max](qint64 da, qint64 gesamt) {
+        if (da > max || gesamt > max)
+            reply->abort();
+    });
+}
+
 class IconResponse : public QQuickImageResponse
 {
     // Eigener Uebersetzungskontext - die Klasse hat keinen von sich aus
@@ -33,10 +98,16 @@ class IconResponse : public QQuickImageResponse
 
 public:
     IconResponse(const QString &url, const QString &file, QNetworkAccessManager *net,
-                 const QString &fingerprint)
-        : m_url(url), m_file(file), m_net(net), m_fingerprint(fingerprint)
+                 const QString &fingerprint, const QString &host)
+        : m_url(url), m_file(file), m_net(net), m_fingerprint(fingerprint), m_host(host)
     {
         if (m_image.load(m_file)) {
+            QTimer::singleShot(0, this, [this]() { emit finished(); });
+            return;
+        }
+        if (!vomFernseher(m_url, m_host)) {
+            ErrorLog::note(tr("Icon"),
+                           tr("this address does not lead to the TV - not fetched"), m_url);
             QTimer::singleShot(0, this, [this]() { emit finished(); });
             return;
         }
@@ -56,18 +127,7 @@ public:
     void get()
     {
         QNetworkReply *reply = m_net->get(QNetworkRequest(QUrl(m_url)));
-        const QString fingerprint = m_fingerprint;
-        connect(reply, &QNetworkReply::sslErrors, this,
-                [reply, fingerprint](const QList<QSslError> &errors) {
-                    for (const QSslError &e : errors) {
-                        if (e.certificate().isNull())
-                            continue;
-                        if (fingerprint == QString::fromLatin1(
-                                e.certificate().digest(QCryptographicHash::Sha256).toHex()))
-                            reply->ignoreSslErrors();
-                        return;
-                    }
-                });
+        anhaengen(reply, m_fingerprint, kMaxSymbol);
         connect(reply, &QNetworkReply::finished, this, [this, reply]() {
             const bool ok = reply->error() == QNetworkReply::NoError
                             && m_image.loadFromData(reply->readAll());
@@ -99,6 +159,7 @@ private:
     QString m_file;
     QNetworkAccessManager *m_net;
     QString m_fingerprint;
+    QString m_host;
     int m_tries = 3;
 };
 
@@ -120,30 +181,25 @@ void TvIcons::setFingerprint(const QString &f)
     emit fingerprintChanged();
 }
 
-/* Gleiche Pruefung wie beim Hauptkanal: nur das gemerkte Zertifikat zaehlt. */
-void TvIcons::pin(QNetworkReply *reply) const
+void TvIcons::setHost(const QString &h)
 {
-    const QString fp = m_fingerprint;
-    connect(reply, &QNetworkReply::sslErrors, reply, [reply, fp](const QList<QSslError> &errors) {
-        for (const QSslError &e : errors) {
-            if (e.certificate().isNull())
-                continue;
-            const QString seen = QString::fromLatin1(
-                e.certificate().digest(QCryptographicHash::Sha256).toHex());
-            if (seen == fp) {
-                reply->ignoreSslErrors();
-            } else {
-                ErrorLog::note(tr("Icon"),
-                               tr("the TV shows a different certificate than the one remembered"), seen);
-            }
-            return;
-        }
-        ErrorLog::note(tr("Icon"), tr("TLS error without a certificate to check"), QString());
-    });
+    if (h == m_host)
+        return;
+    m_host = h;
+    emit hostChanged();
 }
 
 void TvIcons::saveToGallery(const QString &url, const QString &name)
 {
+    /* Zweiter Riegel. Die Adresse ist in LgTv bereits geprueft; hier steht
+       sie noch einmal, weil dieser Weg von QML aus offen ist und ein Riegel
+       nur dort haelt, wo der Griff sitzt. */
+    if (!vomFernseher(url, m_host)) {
+        ErrorLog::note(tr("Screenshot"),
+                       tr("this address does not lead to the TV - not fetched"), url);
+        emit saveFailed(tr("Screenshot not fetched"));
+        return;
+    }
     const QString dir = QStandardPaths::writableLocation(QStandardPaths::PicturesLocation)
                         + QStringLiteral("/LG Remote");
     QDir().mkpath(dir);
@@ -155,7 +211,7 @@ void TvIcons::saveToGallery(const QString &url, const QString &name)
 void TvIcons::fetchCapture(const QString &url, const QString &path, int tries)
 {
     QNetworkReply *reply = m_net->get(QNetworkRequest(QUrl(url)));
-    pin(reply);
+    anhaengen(reply, m_fingerprint, kMaxAufnahme);
     connect(reply, &QNetworkReply::finished, this, [this, reply, url, path, tries]() {
         const QByteArray data = reply->readAll();
         const QNetworkReply::NetworkError err = reply->error();
@@ -197,6 +253,11 @@ void TvIcons::prefetch(const QString &url)
         emit iconReady(url);
         return;
     }
+    if (!vomFernseher(url, m_host)) {
+        ErrorLog::note(tr("Tile"),
+                       tr("icon not fetched: this address does not lead to the TV"), url);
+        return;
+    }
     if (m_fingerprint.isEmpty()) {
         ErrorLog::note(tr("Tile"),
                        tr("icon not fetched: no certificate of the TV remembered yet"), url);
@@ -204,7 +265,7 @@ void TvIcons::prefetch(const QString &url)
     }
 
     QNetworkReply *reply = m_net->get(QNetworkRequest(QUrl(url)));
-    pin(reply);
+    anhaengen(reply, m_fingerprint, kMaxSymbol);
     connect(reply, &QNetworkReply::finished, this, [this, reply, url, file]() {
         const QByteArray data = reply->readAll();
         const bool ok = reply->error() == QNetworkReply::NoError && !data.isEmpty();
@@ -227,5 +288,6 @@ void TvIcons::prefetch(const QString &url)
 QQuickImageResponse *TvIcons::requestImageResponse(const QString &id, const QSize &)
 {
     const QString url = QUrl::fromPercentEncoding(id.toUtf8());
-    return new IconResponse(url, m_dir + QLatin1Char('/') + cacheName(url), m_net, m_fingerprint);
+    return new IconResponse(url, m_dir + QLatin1Char('/') + cacheName(url), m_net,
+                            m_fingerprint, m_host);
 }

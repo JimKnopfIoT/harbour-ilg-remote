@@ -37,6 +37,8 @@ Item {
 
     Column {
         anchors.centerIn: parent
+        // Mitte des freien Feldes, nicht des Schirms - oben fehlt die Aussparung
+        anchors.verticalCenterOffset: panel.window.topInset / 2
         spacing: Theme.paddingLarge
 
         // ---------- Anzeige ----------

@@ -22,6 +22,14 @@ const quint16 kSsdpPort = 1900;
 const quint16 kSsapPort = 3001;
 const int kRounds = 3;
 
+/* Wie viele Verbindungen gleichzeitig offen sein duerfen. Ein /24 passt in
+   einen Schwung, es bleibt also so schnell wie bisher; erst ein weiteres Netz
+   wird in Schueben abgeklopft. Der Grund: Ein /22 waeren ueber tausend
+   Verbindungen auf einmal, und mehr als 1024 offene Dateien gibt der Prozess
+   von Haus aus nicht her - die Suche waere an sich selbst gescheitert und
+   nicht am Netz. */
+const int kParallel = 256;
+
 // Manche Modelle antworten nur auf eine der beiden Kennungen
 const QStringList kTargets = {
     QStringLiteral("urn:lge-com:service:webos-second-screen:1"),
@@ -176,6 +184,7 @@ void Discovery::stop()
         s->deleteLater();
     }
     m_probes = 0;
+    m_warteschlange.clear();
     setRunning(false);
 }
 
@@ -213,20 +222,40 @@ void Discovery::sweep()
             const QString host = QHostAddress(ziel).toString();
             if (m_seen.contains(host))
                 continue;               // hat schon per SSDP geantwortet
-
-            QTcpSocket *s = new QTcpSocket(this);
-            ++m_probes;
-            connect(s, &QTcpSocket::connected, this, [this, s, host]() { probeDone(s, host, true); });
-            connect(s, static_cast<void (QAbstractSocket::*)(QAbstractSocket::SocketError)>(&QAbstractSocket::error),
-                    this, [this, s, host](QAbstractSocket::SocketError) { probeDone(s, host, false); });
-            QTimer::singleShot(2500, s, [this, s, host]() { probeDone(s, host, false); });
-            s->connectToHost(host, kSsapPort);
+            m_warteschlange.append(host);
         }
     }
     m_beklopft = beklopft.join(QStringLiteral(", "));
 
-    if (m_probes == 0)
-        setRunning(false);
+    naechste();
+}
+
+/* Nachruecken lassen, bis die Warteschlange leer ist - und erst wenn auch
+   nichts mehr laeuft, ist die Suche vorbei. */
+void Discovery::naechste()
+{
+    while (m_probes < kParallel && !m_warteschlange.isEmpty()) {
+        const QString host = m_warteschlange.takeFirst();
+        if (m_seen.contains(host))
+            continue;               // hat inzwischen per SSDP geantwortet
+
+        QTcpSocket *s = new QTcpSocket(this);
+        ++m_probes;
+        connect(s, &QTcpSocket::connected, this, [this, s, host]() { probeDone(s, host, true); });
+        connect(s, static_cast<void (QAbstractSocket::*)(QAbstractSocket::SocketError)>(&QAbstractSocket::error),
+                this, [this, s, host](QAbstractSocket::SocketError) { probeDone(s, host, false); });
+        QTimer::singleShot(2500, s, [this, s, host]() { probeDone(s, host, false); });
+        s->connectToHost(host, kSsapPort);
+    }
+
+    if (m_probes > 0 || !m_warteschlange.isEmpty())
+        return;
+
+    if (m_seen.isEmpty())
+        ErrorLog::note(tr("Search"),
+                       tr("nothing found - neither by SSDP nor on port 3001"),
+                       m_beklopft);
+    setRunning(false);
 }
 
 void Discovery::probeDone(QTcpSocket *s, const QString &host, bool open)
@@ -241,13 +270,8 @@ void Discovery::probeDone(QTcpSocket *s, const QString &host, bool open)
         m_seen.insert(host);
         emit found(host, host);
     }
-    if (--m_probes <= 0) {
-        if (m_seen.isEmpty())
-            ErrorLog::note(tr("Search"),
-                           tr("nothing found - neither by SSDP nor on port 3001"),
-                           m_beklopft);
-        setRunning(false);
-    }
+    --m_probes;
+    naechste();
 }
 
 void Discovery::setRunning(bool r)

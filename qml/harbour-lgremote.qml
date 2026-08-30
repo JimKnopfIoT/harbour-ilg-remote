@@ -69,6 +69,14 @@ ApplicationWindow {
     }
     readonly property string deviceName: device ? device.name : ""
 
+    /* Aussparung in der oberen Bildkante (J2). Silica haelt sich denselben
+       Rand im Seitenkopf von selbst frei (PageHeader._minimumTopMargin), also
+       auf allen Seiten mit PageHeader. Die drei Karussellseiten tragen keinen
+       Kopf und muessen selbst danach fragen. Die Orientierungsabfrage von dort
+       entfaellt - diese App steht auf Portrait. Geraete ohne Aussparung melden
+       0, aeltere Sailfish-Fassungen kennen die Eigenschaft gar nicht. */
+    readonly property real topInset: Screen.hasCutouts ? Screen.topCutout.height : 0
+
     function loadDevices() {
         var list = []
         if (cfgDevices.value && cfgDevices.value.length > 0) {
@@ -261,6 +269,10 @@ ApplicationWindow {
             app.storeCert(certFingerprint)
             icons.fingerprint = certFingerprint
         }
+        /* Und dieselbe Adresse: abgerufen wird nur, was auf den Fernseher
+           zeigt. Eine App auf dem Fernseher gibt ihre Symboladresse selbst
+           an - sie darf nicht bestimmen, wohin dieses Telefon verbindet. */
+        onHostChanged: icons.host = host
         onCaptureReady: icons.saveToGallery(url, "lgremote-"
                         + Qt.formatDateTime(new Date(), "yyyyMMdd-hhmmss") + ".jpg")
     }
@@ -280,6 +292,7 @@ ApplicationWindow {
         loadDevices()
         loadTiles()
         icons.fingerprint = tvConn.certFingerprint
+        icons.host = tvConn.host
         if (host.length > 0) tvConn.connectTv()
     }
 }

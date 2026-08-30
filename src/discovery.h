@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QSet>
+#include <QStringList>
 #include <QString>
 
 class QTcpSocket;
@@ -39,6 +40,7 @@ private:
     void sendSearch();
     void closeSocket();
     void sweep();
+    void naechste();
     void probeDone(QTcpSocket *s, const QString &host, bool open);
     void fetchName(const QString &host, const QString &location);
     void setRunning(bool r);
@@ -48,6 +50,8 @@ private:
     QTimer *m_repeat = nullptr;
     QTimer *m_deadline = nullptr;
     QSet<QString> m_seen;
+    // Noch nicht angeklopfte Adressen; es laufen hoechstens kParallel zugleich
+    QStringList m_warteschlange;
     // Welche Netze abgeklopft wurden - fuers Protokoll, wenn nichts kam
     QString m_beklopft;
     int m_rounds = 0;
