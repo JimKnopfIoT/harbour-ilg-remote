@@ -4,6 +4,7 @@
 #include <QHash>
 #include <QJsonObject>
 #include <QObject>
+#include <QSslCertificate>
 #include <QSslError>
 #include <QString>
 #include <QStringList>
@@ -11,6 +12,8 @@
 #include <QVariantMap>
 #include <QTimer>
 #include <QWebSocket>
+
+class QUrl;
 
 /*
  * Anbindung an einen LG-Fernseher mit webOS (SSAP).
@@ -216,7 +219,17 @@ private:
     };
     static QString wantName(Want want);
 
-    bool acceptCert(const QList<QSslError> &errors);
+    bool acceptCert(const QSslCertificate &vorgelegt, const QList<QSslError> &errors);
+    /* Der Fernseher nennt uns Adressen: den Tastenkanal, das Bildschirmfoto,
+       die App-Symbole. Keine davon wird ungeprueft benutzt - sie muss zu ihm
+       selbst zurueckfuehren. Verglichen wird gegen die eingetragene Adresse
+       und gegen die tatsaechliche Gegenstelle, damit auch ein Geraetename
+       statt einer IP im Eintrag traegt. */
+    bool vomFernseher(const QUrl &u) const;
+    /* Symboladresse aus der App-Liste: durchgereicht wird sie nur,
+       wenn sie auf den Fernseher zeigt - sonst leer, dann steht die
+       Beschriftung an ihrer Stelle. */
+    QString pruefeSymbol(const QString &url) const;
     void flushMove();
     QJsonObject ytPayload();
     void launchYouTube(const QString &begriff);
@@ -241,6 +254,8 @@ private:
     QWebSocket m_pointer;
 
     QString m_host;
+    // Gegenstelle des offenen Hauptkanals, als Adresse
+    QString m_peer;
     QString m_clientKey;
     QString m_certFingerprint;
     /* Gesetzt, wenn das Zertifikat nicht zum gemerkten passt: dann keine

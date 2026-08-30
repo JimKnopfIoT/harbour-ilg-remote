@@ -847,6 +847,22 @@ Die Tasten laufen über einen zweiten Kanal, dessen Adresse der Fernseher erst a
         <source>the built-in handshake is unreadable - pairing is impossible</source>
         <translation>der eingebaute Anmelde-Handschlag ist unlesbar – Koppeln nicht möglich</translation>
     </message>
+    <message>
+        <source>the TV names an address outside itself for the key channel - not opened</source>
+        <translation>der Fernseher nennt für den Tastenkanal eine Adresse außerhalb seiner selbst – nicht geöffnet</translation>
+    </message>
+    <message>
+        <source>the TV names the image somewhere other than on itself - not fetched</source>
+        <translation>der Fernseher nennt das Bild woanders als bei sich selbst – nicht geholt</translation>
+    </message>
+    <message>
+        <source>%1 characters</source>
+        <translation>%1 Zeichen</translation>
+    </message>
+    <message>
+        <source>%1 entries name their icon outside the TV - icons ignored</source>
+        <translation>%1 Einträge nennen ihr Symbol außerhalb des Fernsehers – Symbole übergangen</translation>
+    </message>
 </context>
 <context>
     <name>MainMenu</name>
@@ -935,6 +951,10 @@ Die Tasten laufen über einen zweiten Kanal, dessen Adresse der Fernseher erst a
     <message>
         <source>text to the TV</source>
         <translation>Text an den Fernseher</translation>
+    </message>
+    <message>
+        <source>no TV - text stays here</source>
+        <translation>kein Fernseher - der Text bleibt hier</translation>
     </message>
     <message>
         <source>opening keyboard on the TV ...</source>
@@ -1295,6 +1315,14 @@ Die Tasten laufen über einen zweiten Kanal, dessen Adresse der Fernseher erst a
     <message>
         <source>icon could not be cached</source>
         <translation>Symbol ließ sich nicht zwischenspeichern</translation>
+    </message>
+    <message>
+        <source>this address does not lead to the TV - not fetched</source>
+        <translation>diese Adresse führt nicht zum Fernseher – nicht geholt</translation>
+    </message>
+    <message>
+        <source>icon not fetched: this address does not lead to the TV</source>
+        <translation>Symbol nicht geholt: diese Adresse führt nicht zum Fernseher</translation>
     </message>
 </context>
 <context>

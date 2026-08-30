@@ -2,7 +2,7 @@ Name:       harbour-lgremote
 # Keep the build machine's name out of the RPM header.
 %define _buildhost reproducible-builder
 Summary:    Fernbedienung für LG webOS-Fernseher
-Version:    1.1.3
+Version:    1.1.4
 Release:    1
 License:    MIT
 URL:        https://github.com/JimKnopfIoT/harbour-ilg-remote
@@ -46,6 +46,33 @@ desktop-file-install --delete-original \
 %{_datadir}/icons/hicolor/*/apps/%{name}.png
 
 %changelog
+* Sun Aug 30 2026 harbour-lgremote contributors 1.1.4-1
+- Display cutout: on a phone with a notch the three carousel pages kept their
+  content out from under it. Silica frees that margin by itself, but only
+  where a PageHeader sits - and those three pages carry none, so the pointer
+  page put its swipe strip right under the cutout.
+- Pointer pad: a tap is a click again. Two pixels between two move events
+  decided whether a gesture counted as a drag, which is less than a fifth of a
+  millimetre - no finger holds that still, so almost every tap was taken for a
+  drag and the click on release was dropped. The distance from the touch-down
+  point is now measured against Theme.startDragDistance.
+- Addresses the TV names are checked before they are used. The key channel
+  (socketPath), the screenshot (imageUri) and every app icon must point back at
+  the TV over https/wss. An app on the TV states its own icon address, and it
+  must not decide where this phone opens a connection - over plain http there
+  is no handshake and so no pinned certificate to check either.
+- Certificate pinning compares the peer certificate. Accepting when any
+  certificate in the presented chain matched let anyone in who attached a copy
+  of the remembered certificate as decoration - certificates are public. Only
+  the leaf proves possession of its key in the handshake. A fingerprint stored
+  before 1.1.2 no longer matches: reset the pairing once.
+- Downloads are capped (4 MB per icon, 32 MB per screenshot) and the subnet
+  probe opens at most 256 connections at a time. A /24 still goes in one sweep;
+  a wider network used to open more sockets than the process may hold open.
+- Typed text no longer goes into the error log. It was recorded when the TV
+  reported no focused field - which is exactly when somebody is typing into a
+  form on the TV.
+
 * Sat Aug 22 2026 harbour-lgremote contributors 1.1.2-1
 - The TV certificate is picked out of the chain properly. The TV sends its own
   certificate together with the intermediate that issued it, and the order of

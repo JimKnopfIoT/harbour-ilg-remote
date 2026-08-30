@@ -38,7 +38,7 @@ Item {
 
     SilicaFlickable {
         anchors.fill: parent
-        contentHeight: col.height + Theme.paddingLarge
+        contentHeight: col.y + col.height + Theme.paddingLarge
         // Waagerechtes Wischen gehoert dem Karussell, nicht dieser Liste
         flickableDirection: Flickable.VerticalFlick
 
@@ -47,6 +47,8 @@ Item {
         Column {
             id: col
             width: parent.width
+            // Unter der Aussparung anfangen, wie es der Seitenkopf anderswo tut
+            y: panel.window.topInset
             spacing: Theme.paddingLarge
 
             // ---------- Kopf: Ein/Aus links, Zustand rechts ----------

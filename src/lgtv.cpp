@@ -168,7 +168,7 @@ LgTv::LgTv(QObject *parent)
         s->setSslConfiguration(ssl);
         connect(s, static_cast<void (QWebSocket::*)(const QList<QSslError> &)>(&QWebSocket::sslErrors),
                 this, [this, s](const QList<QSslError> &errors) {
-                    if (acceptCert(errors)) {
+                    if (acceptCert(s->sslConfiguration().peerCertificate(), errors)) {
                         s->ignoreSslErrors();
                         return;
                     }
@@ -303,36 +303,57 @@ void LgTv::setCertFingerprint(const QString &f)
 
 /* Erste Verbindung merkt den Fingerabdruck, spaetere muessen ihn zeigen.
    Welche Fehler das Zertifikat sonst hat, ist gleichgueltig - massgeblich
-   ist, dass es dasselbe Geraet ist. */
-/* Der TV schickt eine Kette; die Reihenfolge der Fehler liegt nicht in
-   unserer Hand. Gemeint ist sein eigenes Zertifikat - jenes, das keinem
-   anderen der Kette als Aussteller dient. */
-bool LgTv::acceptCert(const QList<QSslError> &errors)
-{
-    QList<QSslCertificate> kette;
-    for (const QSslError &e : errors) {
-        const QSslCertificate c = e.certificate();
-        if (!c.isNull() && !kette.contains(c))
-            kette << c;
-    }
-    if (kette.isEmpty())
-        return false;
+   ist, dass es dasselbe Geraet ist.
 
-    QSslCertificate blatt = kette.first();
-    for (const QSslCertificate &c : kette) {
-        bool istAussteller = false;
-        for (const QSslCertificate &d : kette) {
-            if (d != c && d.issuerInfo(QSslCertificate::CommonName)
-                          == c.subjectInfo(QSslCertificate::CommonName)) {
-                istAussteller = true;
+   Verglichen wird das Zertifikat der Gegenstelle, nicht irgendeines aus der
+   vorgelegten Kette. Der Unterschied ist der ganze Wert der Pruefung: Nur das
+   Blatt weist im Handschlag den Besitz seines Schluessels nach. Jedes weitere
+   Zertifikat ist oeffentlich - es geht in jedem Handschlag ueber die Leitung
+   und laesst sich einer fremden Kette als Beiwerk anhaengen. Eine Fassung,
+   die "irgendeines der Kette passt" gelten liess, nahm damit jeden an, der
+   eine Kopie unseres gemerkten Zertifikats mitschickt - und schrieb den
+   Merkposten anschliessend auf sein Blatt um.
+
+   Wer noch einen Fingerabdruck aus der Zeit vor 1.1.2 gespeichert hat - damals
+   konnte die Zwischenstelle gemerkt worden sein -, bekommt jetzt "Zertifikat
+   passt nicht" und setzt die Kopplung einmal zurueck. Das ist der Preis, und
+   er ist an dieser Stelle richtig herum: lieber einmal nachfragen als
+   dauerhaft eine Hintertuer offenhalten. */
+bool LgTv::acceptCert(const QSslCertificate &vorgelegt, const QList<QSslError> &errors)
+{
+    QSslCertificate blatt = vorgelegt;
+
+    /* Fuellt die Bibliothek das Zertifikat der Gegenstelle noch nicht, bleibt
+       der alte Weg: aus den gemeldeten Fehlern jenes heraussuchen, das keinem
+       anderen als Aussteller dient. */
+    if (blatt.isNull()) {
+        QList<QSslCertificate> kette;
+        for (const QSslError &e : errors) {
+            const QSslCertificate c = e.certificate();
+            if (!c.isNull() && !kette.contains(c))
+                kette << c;
+        }
+        if (kette.isEmpty())
+            return false;
+        blatt = kette.first();
+        for (const QSslCertificate &c : kette) {
+            bool istAussteller = false;
+            for (const QSslCertificate &d : kette) {
+                if (d != c && d.issuerInfo(QSslCertificate::CommonName)
+                              == c.subjectInfo(QSslCertificate::CommonName)) {
+                    istAussteller = true;
+                    break;
+                }
+            }
+            if (!istAussteller) {
+                blatt = c;
                 break;
             }
         }
-        if (!istAussteller) {
-            blatt = c;
-            break;
-        }
     }
+
+    if (blatt.isNull())
+        return false;
 
     const QString shown = QString::fromLatin1(
         blatt.digest(QCryptographicHash::Sha256).toHex());
@@ -344,18 +365,41 @@ bool LgTv::acceptCert(const QList<QSslError> &errors)
     if (m_certFingerprint == shown)
         return true;
 
-    // Aeltere Fassungen merkten sich womoeglich die Zwischenstelle
-    for (const QSslCertificate &c : kette) {
-        if (m_certFingerprint == QString::fromLatin1(
-                c.digest(QCryptographicHash::Sha256).toHex())) {
-            m_certFingerprint = shown;
-            emit certFingerprintChanged();
-            return true;
-        }
-    }
-
     qWarning() << "LgTv: fremdes Zertifikat" << shown << "erwartet" << m_certFingerprint;
     return false;
+}
+
+/* Eine Adresse aus dem Mund des Fernsehers ist ein Vorschlag, keine Zusage.
+   Wer sie ungeprueft oeffnet, laesst sich vom Gegenueber sagen, wohin die
+   naechsten Tastendruecke gehen - und bei http oder ws greift dabei kein
+   gemerktes Zertifikat, weil es gar keinen Handschlag gibt. Deshalb: Nur der
+   Fernseher selbst, und nur unter der Adresse, unter der wir ihn kennen. */
+bool LgTv::vomFernseher(const QUrl &u) const
+{
+    if (!u.isValid() || u.host().isEmpty())
+        return false;
+    const QString h = u.host();
+    return h.compare(m_host, Qt::CaseInsensitive) == 0
+           || (!m_peer.isEmpty() && h.compare(m_peer, Qt::CaseInsensitive) == 0);
+}
+
+/* Die Symboladresse kommt aus der App-Liste, und in der steht jede App mit
+   dem, was sie selbst angibt. Eine App auf dem Fernseher darf also nicht
+   bestimmen, wohin dieses Telefon eine Verbindung aufbaut. Ein verworfenes
+   Symbol kostet nichts - die Kachel traegt dann ihre Beschriftung.
+
+   Ohne Eintrag ins Protokoll: Der Aufrufer zaehlt und meldet einmal fuer die
+   ganze Liste. Je Symbol ein Eintrag waeren bei dreissig Apps dreissig - und
+   das Protokoll ist nur so viel wert, wie es uebersehbar bleibt. */
+QString LgTv::pruefeSymbol(const QString &url) const
+{
+    if (url.isEmpty())
+        return QString();
+    const QUrl u(url);
+    if (vomFernseher(u)
+        && u.scheme().compare(QLatin1String("https"), Qt::CaseInsensitive) == 0)
+        return url;
+    return QString();
 }
 
 void LgTv::setStatus(const QString &s)
@@ -419,6 +463,10 @@ void LgTv::onMainConnected()
 {
     m_connect->stop();
     qWarning() << "LgTv: Verbindung offen, melde an";
+    /* Die tatsaechliche Gegenstelle festhalten: Steht im Geraeteeintrag ein
+       Name statt einer Adresse, nennt der Fernseher seine Adressen trotzdem
+       als IP - vomFernseher() braucht beide Seiten des Vergleichs. */
+    m_peer = m_main.peerAddress().toString();
     m_linkUp = true;
     m_alive = true;
     m_retryDelay = kFirstRetry;
@@ -790,12 +838,20 @@ void LgTv::handlePayload(Want want, const QJsonObject &payload)
         break;
     case WantPointer: {
         const QString path = payload.value(QStringLiteral("socketPath")).toString();
+        const QUrl ziel(path);
         if (path.isEmpty()) {
             ErrorLog::note(tr("Key channel"),
                            tr("the TV answered without an address for the key channel"), m_host);
             askPointer();
+        } else if (!vomFernseher(ziel)) {
+            /* Nicht wiederholen: Der Fernseher hat geantwortet, nur eben mit
+               einer fremden Adresse. Ein zweiter Versuch braechte dieselbe. */
+            ErrorLog::note(tr("Key channel"),
+                           tr("the TV names an address outside itself for the key channel - not opened"),
+                           path);
+            setStatus(tr("key channel stays closed"));
         } else {
-            m_pointer.open(QUrl(path));
+            m_pointer.open(ziel);
         }
         break;
     }
@@ -824,6 +880,7 @@ void LgTv::handlePayload(Want want, const QJsonObject &payload)
     }
     case WantApps: {
         QVariantList out;
+        int verworfen = 0;
         const QJsonArray points = payload.value(QStringLiteral("launchPoints")).toArray();
         for (const QJsonValue &v : points) {
             const QJsonObject o = v.toObject();
@@ -833,7 +890,11 @@ void LgTv::handlePayload(Want want, const QJsonObject &payload)
             QVariantMap m;
             m.insert(QStringLiteral("ident"), o.value(QStringLiteral("id")).toString());
             m.insert(QStringLiteral("label"), title);
-            m.insert(QStringLiteral("icon"), o.value(QStringLiteral("icon")).toString());
+            const QString roh = o.value(QStringLiteral("icon")).toString();
+            const QString symbol = pruefeSymbol(roh);
+            if (symbol.isEmpty() && !roh.isEmpty())
+                ++verworfen;
+            m.insert(QStringLiteral("icon"), symbol);
             out.append(m);
         }
         // Der Fernseher liefert ungeordnet - Live TV stand auf Platz 31
@@ -841,11 +902,16 @@ void LgTv::handlePayload(Want want, const QJsonObject &payload)
             return a.toMap().value(QStringLiteral("label")).toString().localeAwareCompare(
                        b.toMap().value(QStringLiteral("label")).toString()) < 0;
         });
+        if (verworfen > 0)
+            ErrorLog::note(wantName(want),
+                           tr("%1 entries name their icon outside the TV - icons ignored")
+                               .arg(verworfen), m_host);
         emit appsReceived(out);
         break;
     }
     case WantInputs: {
         QVariantList out;
+        int verworfen = 0;
         const QJsonArray devices = payload.value(QStringLiteral("devices")).toArray();
         for (const QJsonValue &v : devices) {
             const QJsonObject o = v.toObject();
@@ -854,9 +920,17 @@ void LgTv::handlePayload(Want want, const QJsonObject &payload)
             m.insert(QStringLiteral("ident"), id);
             const QString label = o.value(QStringLiteral("label")).toString();
             m.insert(QStringLiteral("label"), label.isEmpty() ? id : label);
-            m.insert(QStringLiteral("icon"), o.value(QStringLiteral("icon")).toString());
+            const QString roh = o.value(QStringLiteral("icon")).toString();
+            const QString symbol = pruefeSymbol(roh);
+            if (symbol.isEmpty() && !roh.isEmpty())
+                ++verworfen;
+            m.insert(QStringLiteral("icon"), symbol);
             out.append(m);
         }
+        if (verworfen > 0)
+            ErrorLog::note(wantName(want),
+                           tr("%1 entries name their icon outside the TV - icons ignored")
+                               .arg(verworfen), m_host);
         emit inputsReceived(out);
         break;
     }
@@ -915,13 +989,20 @@ void LgTv::handlePayload(Want want, const QJsonObject &payload)
     }
     case WantCapture: {
         const QString uri = payload.value(QStringLiteral("imageUri")).toString();
+        const QUrl bild(uri);
         if (uri.isEmpty()) {
             ErrorLog::note(tr("Screenshot"),
                            tr("the TV took the order but names no image"), m_host);
             setStatus(tr("no screenshot from the TV"));
-        }
-        else
+        } else if (!vomFernseher(bild)
+                   || bild.scheme().compare(QLatin1String("https"), Qt::CaseInsensitive) != 0) {
+            ErrorLog::note(tr("Screenshot"),
+                           tr("the TV names the image somewhere other than on itself - not fetched"),
+                           uri);
+            setStatus(tr("no screenshot from the TV"));
+        } else {
             emit captureReady(uri);
+        }
         break;
     }
     case WantPower: {
@@ -1116,10 +1197,14 @@ void LgTv::insertText(const QString &text)
     /* Ohne offenes Feld nimmt der Fernseher den Text an und wirft ihn weg -
        am Geraet nachgewiesen. Das ist keine Panne, sondern ein Zustand, ueber
        den sich berichten laesst. */
+    /* Nur die Laenge ins Protokoll, nie der Text: Was hier durchgeht, ist
+       das, was jemand gerade auf dem Fernseher eintippt - unter Umstaenden
+       ein Kennwort. Das Protokoll ist im Programm einsehbar und laesst sich
+       als Text herausgeben. */
     if (!m_textInputReady)
         ErrorLog::note(tr("Text entry"),
                        tr("no input field focused on the TV - the text may be discarded"),
-                       text.left(40));
+                       tr("%1 characters").arg(text.length()));
     QJsonObject p;
     p.insert(QStringLiteral("text"), text);
     p.insert(QStringLiteral("replace"), 0);

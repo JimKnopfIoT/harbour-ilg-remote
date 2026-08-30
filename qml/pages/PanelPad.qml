@@ -68,7 +68,8 @@ Item {
             // Ohne diesen Streifen kaeme man von der Seite nicht mehr herunter
             Item {
                 id: streifen
-                anchors { left: parent.left; right: parent.right; top: parent.top }
+                anchors { left: parent.left; right: parent.right; top: parent.top
+                          topMargin: panel.window.topInset }
                 height: Theme.itemSizeSmall
 
                 Label {
@@ -124,22 +125,35 @@ Item {
                         enabled: panel.tv.pointerReady
                         preventStealing: true
 
+                        property real startX: 0
+                        property real startY: 0
                         property real lastX: 0
                         property real lastY: 0
                         property bool dragged: false
 
                         onPressed: {
-                            lastX = mouse.x; lastY = mouse.y; dragged = false
+                            startX = lastX = mouse.x
+                            startY = lastY = mouse.y
+                            dragged = false
                         }
 
                         onPositionChanged: {
                             var dx = mouse.x - lastX
                             var dy = mouse.y - lastY
-                            // Zittern beim Antippen nicht als Bewegung werten
+                            /* Ein Finger steht nie still. Zwei Pixel sind
+                               keine zwei Zehntelmillimeter - daran den Zug
+                               festzumachen hiess: fast jedes Antippen galt als
+                               Zug, und der Klick beim Loslassen fiel aus.
+                               Gemessen wird deshalb der Abstand zum Aufsetz-
+                               punkt gegen dieselbe Schwelle, die Silica auch
+                               sonst benutzt. */
+                            if (Math.abs(mouse.x - startX) > Theme.startDragDistance
+                                    || Math.abs(mouse.y - startY) > Theme.startDragDistance)
+                                dragged = true
+                            // Zuckungen gar nicht erst senden
                             if (Math.abs(dx) < 2 && Math.abs(dy) < 2) return
                             lastX = mouse.x
                             lastY = mouse.y
-                            dragged = true
                             panel.tv.move(Math.round(dx), Math.round(dy))
                         }
 
@@ -262,6 +276,8 @@ Item {
                 // Vordergrund fragen geht nicht mehr (403)
                 function send() {
                     if (textField.text.length === 0) return
+                    // Ohne Fernseher hat der Text kein Ziel - stehenlassen
+                    if (!panel.tv.registered) return
                     if (panel.tv.textInputReady) {
                         panel.tv.insertText(textField.text)
                         textField.text = ""
@@ -284,6 +300,7 @@ Item {
 
                 function search() {
                     if (textField.text.length === 0) return
+                    if (!panel.tv.registered) return
                     panel.tv.searchYouTube(textField.text)
                     textField.text = ""
                     textField.focus = false
@@ -302,13 +319,18 @@ Item {
                     }
                 }
 
+                /* Nicht an den Fernseher gebunden: ein abgeschaltetes Feld
+                   nimmt den Fokus nicht an, dann bliebe die Tastatur zu und
+                   die Zeigerflaeche wuechse ueber die ganze Seite. Absenden
+                   verhindern die Knoepfe daneben. */
                 TextField {
                     id: textField
                     width: keyboardRow.width - 4 * (keyboardRow.keySize + Theme.paddingSmall)
-                    enabled: panel.tv.registered
                     placeholderText: keyboardRow.waiting
                                      ? qsTr("opening keyboard on the TV ...")
-                                     : qsTr("text to the TV")
+                                     : panel.tv.registered
+                                       ? qsTr("text to the TV")
+                                       : qsTr("no TV - text stays here")
                     EnterKey.iconSource: "image://theme/icon-m-enter-accept"
                     EnterKey.onClicked: keyboardRow.send()
 
