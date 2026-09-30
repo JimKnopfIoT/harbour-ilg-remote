@@ -2,7 +2,7 @@ Name:       harbour-lgremote
 # Keep the build machine's name out of the RPM header.
 %define _buildhost reproducible-builder
 Summary:    Fernbedienung für LG webOS-Fernseher
-Version:    1.1.4
+Version:    1.1.5
 Release:    1
 License:    MIT
 URL:        https://github.com/JimKnopfIoT/harbour-ilg-remote
@@ -46,6 +46,14 @@ desktop-file-install --delete-original \
 %{_datadir}/icons/hicolor/*/apps/%{name}.png
 
 %changelog
+* Wed Sep 30 2026 harbour-lgremote contributors 1.1.5-1
+- Cover: the directional pad is a cross again. Its corners were hidden with
+  visible: false, and a Grid leaves invisible items out of the layout - the
+  five remaining keys slid together into two rows.
+- Cover actions: plus and minus instead of play and pause. The two buttons
+  have always turned the volume up and down; the theme has no minus icon, so
+  the app now ships its own pair.
+
 * Sun Aug 30 2026 harbour-lgremote contributors 1.1.4-1
 - Display cutout: on a phone with a notch the three carousel pages kept their
   content out from under it. Silica frees that margin by itself, but only

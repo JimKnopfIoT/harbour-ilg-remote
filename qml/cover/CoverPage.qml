@@ -48,7 +48,9 @@ CoverBackground {
                     width: cover.width * 0.16
                     height: width
                     radius: index === 4 ? width / 2 : width * 0.2
-                    visible: index % 2 === 1 || index === 4
+                    // Nicht visible: Grid laesst Unsichtbares beim Anordnen aus,
+                    // die fuenf Felder rutschten dann zu zwei Reihen zusammen.
+                    opacity: index % 2 === 1 || index === 4 ? 1 : 0
                     color: Theme.rgba(Theme.primaryColor, index === 4 ? 0.35 : 0.2)
                 }
             }
@@ -91,12 +93,14 @@ CoverBackground {
 
     CoverActionList {
         enabled: tv && tv.registered
+        // Das Theme kennt kein Minus - Play/Pause hatte hier die Lautstaerke
+        // gesteuert, also lieber ein eigenes Paar
         CoverAction {
-            iconSource: "image://theme/icon-cover-play"
+            iconSource: Qt.resolvedUrl("../images/vol-up.png")
             onTriggered: tv.volumeUp()
         }
         CoverAction {
-            iconSource: "image://theme/icon-cover-pause"
+            iconSource: Qt.resolvedUrl("../images/vol-down.png")
             onTriggered: tv.volumeDown()
         }
     }
