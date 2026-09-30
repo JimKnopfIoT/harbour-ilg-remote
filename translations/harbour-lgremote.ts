@@ -114,17 +114,17 @@ The keys run over a second channel whose address the TV only hands out on reques
 <context>
     <name>CoverPage</name>
     <message>
-        <location filename="../qml/cover/CoverPage.qml" line="86"/>
+        <location filename="../qml/cover/CoverPage.qml" line="88"/>
         <source>muted</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/cover/CoverPage.qml" line="86"/>
+        <location filename="../qml/cover/CoverPage.qml" line="88"/>
         <source>connected</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/cover/CoverPage.qml" line="87"/>
+        <location filename="../qml/cover/CoverPage.qml" line="89"/>
         <source>disconnected</source>
         <translation type="unfinished"></translation>
     </message>

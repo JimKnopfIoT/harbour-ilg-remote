@@ -45,6 +45,8 @@ DISTFILES += \
     qml/pages/SettingsPage.qml \
     qml/cover/CoverPage.qml \
     qml/images/shutter.png \
+    qml/images/vol-up.png \
+    qml/images/vol-down.png \
     qml/images/tv.png \
     qml/images/youtube.png \
     qml/images/jellyfin.png \
