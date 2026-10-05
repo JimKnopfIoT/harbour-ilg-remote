@@ -6,6 +6,7 @@ MouseArea {
     id: key
 
     property string text: ""
+    property string icon: ""
     property bool blank: false
     property bool wide: false
     property real size: Theme.itemSizeLarge
@@ -50,9 +51,22 @@ MouseArea {
         border.color: Theme.rgba(Theme.primaryColor, 0.22)
     }
 
+    // Bild in der Groesse einer Textzeile, sitzt wie ein Zeichen
+    HighlightImage {
+        anchors.centerIn: parent
+        visible: !key.blank && key.icon !== ""
+        width: key.fontSize
+        height: width * 1.257
+        sourceSize.width: width
+        sourceSize.height: height
+        source: key.icon
+        color: Theme.primaryColor
+        highlighted: key.pressed
+    }
+
     Label {
         anchors.centerIn: parent
-        visible: !key.blank
+        visible: !key.blank && key.icon === ""
         text: key.text
         font.pixelSize: key.wide ? Theme.fontSizeSmall : key.fontSize
         color: key.pressed ? Theme.highlightColor : Theme.primaryColor

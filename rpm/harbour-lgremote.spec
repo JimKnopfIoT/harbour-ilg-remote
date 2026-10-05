@@ -2,7 +2,7 @@ Name:       harbour-lgremote
 # Keep the build machine's name out of the RPM header.
 %define _buildhost reproducible-builder
 Summary:    Fernbedienung für LG webOS-Fernseher
-Version:    1.1.5
+Version:    1.1.6
 Release:    1
 License:    MIT
 URL:        https://github.com/JimKnopfIoT/harbour-ilg-remote
@@ -46,6 +46,13 @@ desktop-file-install --delete-original \
 %{_datadir}/icons/hicolor/*/apps/%{name}.png
 
 %changelog
+* Mon Oct 05 2026 harbour-lgremote contributors 1.1.6-1
+- Power and sound keys: own symbols. The update from SailfishOS 5.2.0.17 to
+  5.2.0.18 drops the Twemoji font, which drew the symbols for power and sound
+  (on/mute) - power became an empty box, the speakers took Noto's shape. The
+  symbols are now self-drawn SVG, in the same place and size as before.
+- About page: shows the right version again.
+
 * Wed Sep 30 2026 harbour-lgremote contributors 1.1.5-1
 - Cover: the directional pad is a cross again. Its corners were hidden with
   visible: false, and a Grid leaves invisible items out of the layout - the

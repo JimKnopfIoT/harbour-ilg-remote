@@ -13,7 +13,7 @@ Page {
        "glyph" = Zeichen, "dot" = farbiger Punkt. */
     readonly property var eintraege: [
         { "group": qsTr("Keys"),
-          "kind": "glyph", "src": "⏻", "color": "#4caf50",
+          "kind": "image", "src": "../images/power.png", "color": "#4caf50",
           "title": qsTr("Power"),
           "text": qsTr("Short tap sends the wake-up signal over the network (Wake-on-LAN); holding it for two seconds switches the TV off. The colour is the state of the TV, not of the connection: green running, steady orange in standby, blinking orange while connecting, red no connection.") },
 
@@ -108,13 +108,26 @@ Page {
 
                     Image {
                         anchors.centerIn: parent
-                        visible: modelData.kind === "theme" || modelData.kind === "image"
+                        visible: (modelData.kind === "theme" || modelData.kind === "image")
+                                 && modelData.color === undefined
                         source: modelData.kind === "theme"
                                 ? "image://theme/" + modelData.src
                                 : modelData.kind === "image" ? modelData.src : ""
                         width: Theme.iconSizeMedium * 0.8
                         height: width
                         fillMode: Image.PreserveAspectFit
+                    }
+
+                    HighlightImage {
+                        anchors.centerIn: parent
+                        visible: modelData.kind === "image" && modelData.color !== undefined
+                        source: visible ? modelData.src : ""
+                        width: Theme.iconSizeMedium * 0.8
+                        height: width
+                        sourceSize.width: width
+                        sourceSize.height: height
+                        fillMode: Image.PreserveAspectFit
+                        color: visible ? modelData.color : Theme.primaryColor
                     }
 
                     Label {

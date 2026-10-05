@@ -114,17 +114,17 @@ The keys run over a second channel whose address the TV only hands out on reques
 <context>
     <name>CoverPage</name>
     <message>
-        <location filename="../qml/cover/CoverPage.qml" line="88"/>
+        <location filename="../qml/cover/CoverPage.qml" line="91"/>
         <source>muted</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/cover/CoverPage.qml" line="88"/>
+        <location filename="../qml/cover/CoverPage.qml" line="91"/>
         <source>connected</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/cover/CoverPage.qml" line="89"/>
+        <location filename="../qml/cover/CoverPage.qml" line="92"/>
         <source>disconnected</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1130,52 +1130,52 @@ The keys run over a second channel whose address the TV only hands out on reques
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PanelMain.qml" line="134"/>
+        <location filename="../qml/pages/PanelMain.qml" line="137"/>
         <source>switched off</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PanelMain.qml" line="151"/>
+        <location filename="../qml/pages/PanelMain.qml" line="154"/>
         <source>wake-up signal sent</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PanelMain.qml" line="153"/>
+        <location filename="../qml/pages/PanelMain.qml" line="156"/>
         <source>no MAC address stored - see the error log</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PanelMain.qml" line="154"/>
+        <location filename="../qml/pages/PanelMain.qml" line="157"/>
         <source>invalid MAC address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PanelMain.qml" line="195"/>
+        <location filename="../qml/pages/PanelMain.qml" line="198"/>
         <source>Back</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PanelMain.qml" line="199"/>
+        <location filename="../qml/pages/PanelMain.qml" line="202"/>
         <source>Info</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PanelMain.qml" line="220"/>
+        <location filename="../qml/pages/PanelMain.qml" line="223"/>
         <source>Input</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PanelMain.qml" line="226"/>
+        <location filename="../qml/pages/PanelMain.qml" line="229"/>
         <source>Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PanelMain.qml" line="242"/>
+        <location filename="../qml/pages/PanelMain.qml" line="245"/>
         <source>Sound</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PanelMain.qml" line="259"/>
+        <location filename="../qml/pages/PanelMain.qml" line="263"/>
         <source>Channel</source>
         <translation type="unfinished"></translation>
     </message>
