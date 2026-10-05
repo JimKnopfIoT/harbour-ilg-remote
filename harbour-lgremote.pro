@@ -50,6 +50,9 @@ DISTFILES += \
     qml/images/tv.png \
     qml/images/youtube.png \
     qml/images/jellyfin.png \
+    qml/images/power.png \
+    qml/images/speaker.png \
+    qml/images/mute.png \
     rpm/harbour-lgremote.spec \
     harbour-lgremote.desktop \
     translations/harbour-lgremote-de.ts

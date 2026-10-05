@@ -27,10 +27,13 @@ CoverBackground {
             border.width: 2
             border.color: cover.stateColor
 
-            Label {
+            HighlightImage {
                 anchors.centerIn: parent
-                text: "⏻"
-                font.pixelSize: parent.width * 0.55
+                width: parent.width * 0.55
+                height: width * 1.257
+                sourceSize.width: width
+                sourceSize.height: height
+                source: "../images/power.png"
                 color: cover.stateColor
             }
         }

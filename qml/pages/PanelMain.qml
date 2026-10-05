@@ -107,11 +107,14 @@ Item {
                         from: 0; to: 1; duration: 2000
                     }
 
-                    Label {
+                    HighlightImage {
                         id: powerGlyph
                         anchors.centerIn: parent
-                        text: "⏻"
-                        font.pixelSize: parent.width * 0.42
+                        width: parent.width * 0.42
+                        height: width * 1.257
+                        sourceSize.width: width
+                        sourceSize.height: height
+                        source: "../images/power.png"
                         color: power.stateColor
                         Behavior on color { ColorAnimation { duration: 300 } }
 
@@ -245,7 +248,8 @@ Item {
                     }
                     RemoteKey { text: "+"; repeatable: true; repeatInterval: 200
                                 onActivated: panel.tv.volumeUp() }
-                    RemoteKey { text: panel.tv.muted ? "🔇" : "🔊"
+                    RemoteKey { icon: panel.tv.muted ? "../images/mute.png"
+                                                     : "../images/speaker.png"
                                 fontSize: Theme.fontSizeLarge
                                 onPressed: panel.tv.setMute(!panel.tv.muted) }
                     RemoteKey { text: "−"; repeatable: true; repeatInterval: 200
