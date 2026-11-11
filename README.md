@@ -87,7 +87,7 @@ Sailfish/Qt5 build dependencies (see `rpm/harbour-lgremote.spec`).
 rough around the edges, or change without notice — use it at your own risk. It
 talks only to **your own** TV on your own network.
 
-AI assisted development
+LLM assisted development
 
 ## License
 
